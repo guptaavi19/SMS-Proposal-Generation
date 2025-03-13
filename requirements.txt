@@ -1,0 +1,6 @@
+chromadb
+azure-core
+azure-search-documents
+python-docx
+openai
+Flask
