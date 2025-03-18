@@ -18,6 +18,7 @@ import {
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   projectName: z.any(),
@@ -36,8 +37,11 @@ const formSchema = z.object({
 
 const Page = () => {
   const form = useForm<z.infer<typeof formSchema>>({});
+  const navigate = useNavigate();
 
-  const onSubmit = useCallback(() => {}, []);
+  const onSubmit = useCallback(() => {
+    navigate("/proposal?section=0");
+  }, [navigate]);
 
   return (
     <main className="min-h-screen py-8">
