@@ -19,6 +19,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   projectName: z.any(),
@@ -35,13 +38,46 @@ const formSchema = z.object({
   overviewMap: z.any(),
 });
 
+type GenerateProposalResponse = {
+  proposal_id: string;
+  sections: Record<string, string>;
+};
+
 const Page = () => {
   const form = useForm<z.infer<typeof formSchema>>({});
   const navigate = useNavigate();
 
-  const onSubmit = useCallback(() => {
-    navigate("/proposal?section=0");
-  }, [navigate]);
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (payload: z.infer<typeof formSchema>) => {
+      const res = await axios.post<GenerateProposalResponse>(
+        `${import.meta.env.VITE_API_URL}/generate-proposal`,
+        {
+          report_type: "HDPE",
+          customer_name: "Santos",
+          project_name: payload.projectName,
+          project_number: payload.projectNumber,
+          location: payload.location,
+          meeting_minutes: payload.meetingMinutes,
+        }
+      );
+
+      return res.data;
+    },
+    onSuccess: ({ proposal_id }) => {
+      toast.success("Proposal generated! Redirecting...");
+      navigate(`/proposals/${proposal_id}?section=0`);
+    },
+    onError: () => {
+      toast.error("Something went wrong, please try again.");
+    },
+  });
+
+  const onSubmit = useCallback(
+    (payload: z.infer<typeof formSchema>) => {
+      mutate(payload);
+    },
+    [mutate]
+  );
 
   return (
     <main className="min-h-screen py-8">
@@ -157,11 +193,17 @@ const Page = () => {
               <FormField
                 control={form.control}
                 name="meetingMinutes"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel>Meeting Minutes</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} />
+                      <Input
+                        {...fieldProps}
+                        type="file"
+                        onChange={(e) => {
+                          onChange(e.target.files && e.target.files[0]);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,11 +213,17 @@ const Page = () => {
               <FormField
                 control={form.control}
                 name="threatRegister"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel>Threat Register</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} />
+                      <Input
+                        {...fieldProps}
+                        type="file"
+                        onChange={(e) => {
+                          onChange(e.target.files && e.target.files[0]);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,11 +233,17 @@ const Page = () => {
               <FormField
                 control={form.control}
                 name="closeOutRegister"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel>Close Out Register</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} />
+                      <Input
+                        {...fieldProps}
+                        type="file"
+                        onChange={(e) => {
+                          onChange(e.target.files && e.target.files[0]);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -199,11 +253,17 @@ const Page = () => {
               <FormField
                 control={form.control}
                 name="overviewMap"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...fieldProps } }) => (
                   <FormItem>
                     <FormLabel>Overview Map</FormLabel>
                     <FormControl>
-                      <Input type="file" {...field} />
+                      <Input
+                        {...fieldProps}
+                        type="file"
+                        onChange={(e) => {
+                          onChange(e.target.files && e.target.files[0]);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -211,7 +271,9 @@ const Page = () => {
               />
             </CardContent>
             <CardFooter className="flex justify-end">
-              <Button type="submit">Submit</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Generating Proposal..." : "Submit"}
+              </Button>
             </CardFooter>
           </Card>
         </form>
