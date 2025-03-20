@@ -2,9 +2,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ChevronLeftCircle, Pencil } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -88,7 +89,14 @@ type GetProposalResponse = {
   sections: Record<string, string>;
 };
 
+type AiRevisionResponse = {
+  proposal_id: string;
+  updated_section: string;
+};
+
 const Page = () => {
+  const [sectionContent, setSectionContent] = useState<string>("");
+  const [userPrompt, setUserPrompt] = useState<string>("");
   const [searchParams] = useSearchParams();
   const { id } = useParams();
 
@@ -102,6 +110,89 @@ const Page = () => {
       return res.data;
     },
   });
+
+  const aiRevision = useMutation({
+    mutationFn: async ({ userPrompt }: { userPrompt: string }) => {
+      if (!data) {
+        throw "No data.";
+      }
+
+      let idx = searchParams.get("section");
+      if (!idx) {
+        idx = "0";
+      }
+
+      let sectionName: string = "";
+
+      Object.keys(data.sections).forEach((s, i) => {
+        if (i.toString() == idx) {
+          sectionName = s;
+        }
+      });
+
+      const res = await axios.post<AiRevisionResponse>(
+        `${import.meta.env.VITE_API_URL}/update-section`,
+        {
+          proposal_id: id,
+          section_name: sectionName,
+          user_prompt: userPrompt,
+        },
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+
+      return res.data;
+    },
+    onSuccess: ({ updated_section }) => {
+      if (!data) {
+        return;
+      }
+
+      let idx = searchParams.get("section");
+      if (!idx) {
+        idx = "0";
+      }
+
+      let sectionName: string = "";
+
+      Object.keys(data.sections).forEach((s, i) => {
+        if (i.toString() == idx) {
+          sectionName = s;
+        }
+      });
+
+      toast.success(`Section '${sectionName}' updated.`);
+      setSectionContent(updated_section);
+      setUserPrompt("");
+    },
+    onError: () => {
+      toast.error("Something went wrong, please try again.");
+    },
+  });
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    let idx = searchParams.get("section");
+    if (!idx) {
+      idx = "0";
+    }
+
+    let section: string = data.sections[0];
+
+    Object.keys(data.sections).forEach((s, i) => {
+      if (i.toString() == idx) {
+        section = s;
+      }
+    });
+
+    setSectionContent(data.sections[section]);
+  }, [data]);
 
   if (isFetching) {
     return <div>Loading...</div>;
@@ -173,40 +264,30 @@ const Page = () => {
               <Pencil className="h-4 w-4" />
             </div>
             <div className="mt-8">
-              <Textarea
-                rows={5}
-                value={(() => {
-                  let idx = searchParams.get("section");
-                  if (!idx) {
-                    idx = "0";
-                  }
-
-                  let section: string = data.sections[0];
-
-                  Object.keys(data.sections).forEach((s, i) => {
-                    if (i.toString() == idx) {
-                      section = s;
-                    }
-                  });
-
-                  return data.sections[section];
-                })()}
-              />
+              <Textarea rows={5} value={sectionContent} />
             </div>
             <div className="mt-8">
               <Label>AI Prompt</Label>
               <Textarea
                 rows={5}
                 className="mt-2"
-                value={`Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi praesentium consequatur nisi nulla sit blanditiis libero sapiente amet. Accusamus ipsam nobis dolore temporibus aperiam, animi laboriosam velit laborum inventore consectetur beatae aspernatur rem quisquam, doloremque pariatur dolorum quaerat id perspiciatis qui veritatis excepturi quos placeat sed. Veritatis praesentium quae unde?`}
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
               />
             </div>
             <div className="mt-8 flex justify-center">
               <Button
                 variant="secondary"
                 className="hover:text-background hover:bg-primary"
+                onClick={() => {
+                  aiRevision.mutate({
+                    userPrompt,
+                  });
+                }}
               >
-                Apply AI Revision
+                {aiRevision.isPending
+                  ? "Applying AI Revision..."
+                  : "Apply AI Revision"}
               </Button>
             </div>
           </CardContent>
