@@ -91,6 +91,8 @@ type GetProposalResponse = {
 
 type AiRevisionResponse = {
   proposal_id: string;
+  section_name: string;
+  original_content: string;
   updated_section: string;
 };
 

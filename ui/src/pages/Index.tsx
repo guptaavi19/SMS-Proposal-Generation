@@ -19,9 +19,10 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { toast } from "sonner";
+import { v4 } from "uuid";
 
 const formSchema = z.object({
   projectName: z.any(),
@@ -40,7 +41,9 @@ const formSchema = z.object({
 
 type GenerateProposalResponse = {
   proposal_id: string;
-  sections: Record<string, string>;
+  section_name: Record<string, string>;
+  original_content: string;
+  updated_content: string;
 };
 
 const Page = () => {
@@ -50,8 +53,9 @@ const Page = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
       const res = await axios.post<GenerateProposalResponse>(
-        `${import.meta.env.VITE_API_URL}/generate-proposal`,
+        `${import.meta.env.VITE_API_URL}/generate-section`,
         {
+          proposal_id: v4(),
           report_type: "HDPE",
           customer_name: "Santos",
           project_name: payload.projectName,

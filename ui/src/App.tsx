@@ -1,13 +1,24 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+// import { useChatSession } from "@chainlit/react-client";
 import Index from "./pages/Index";
 import Proposal from "./pages/Proposal";
 import { Toaster } from "./components/ui/sonner";
+// import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 function App() {
+  // const { connect, disconnect } = useChatSession();
+
+  // useEffect(() => {
+  //   connect({});
+
+  //   return () => {
+  //     disconnect();
+  //   };
+  // }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
