@@ -52,17 +52,18 @@ const Page = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
+      const formData = new FormData();
+      formData.append("proposal_id", v4());
+      formData.append("report_type", "HDPE");
+      formData.append("customer_name", "Santos");
+      formData.append("project_name", payload.projectName);
+      formData.append("project_number", payload.projectNumber);
+      formData.append("location", payload.location);
+      formData.append("meeting_minutes", payload.meetingMinutes);
+
       const res = await axios.post<GenerateProposalResponse>(
         `${import.meta.env.VITE_API_URL}/generate-section`,
-        {
-          proposal_id: v4(),
-          report_type: "HDPE",
-          customer_name: "Santos",
-          project_name: payload.projectName,
-          project_number: payload.projectNumber,
-          location: payload.location,
-          meeting_minutes: payload.meetingMinutes,
-        }
+        formData
       );
 
       return res.data;
