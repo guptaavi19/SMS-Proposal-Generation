@@ -5,95 +5,88 @@ import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ChevronLeftCircle, Pencil } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const sections = [
-  {
-    label: "Executive Summary",
-    href: "/",
-  },
-  {
-    label: "Introduction",
-    href: "/",
-  },
-  {
-    label: "Project Background",
-    href: "/",
-  },
-  {
-    label: "Purpose",
-    href: "/",
-  },
-  {
-    label: "Scope",
-    href: "/",
-  },
-  {
-    label: "Abbreviations",
-    href: "/",
-  },
-  {
-    label: "Reference Material",
-    href: "/",
-  },
-  {
-    label: "System Description",
-    href: "/",
-  },
-  {
-    label: "Pipeline Design",
-    href: "/",
-  },
-  {
-    label: "Pipeline Specification",
-    href: "/",
-  },
-  {
-    label: "Location",
-    href: "/",
-  },
-  {
-    label: "Land Use",
-    href: "/",
-  },
-  {
-    label: "Location Class",
-    href: "/",
-  },
-  {
-    label: "Radiation Assessment",
-    href: "/",
-  },
-  {
-    label: "Safety Management Process",
-    href: "/",
-  },
-  {
-    label: "SMS Inputs",
-    href: "/",
-  },
-  {
-    label: "SMS Workshop",
-    href: "/",
-  },
-  {
-    label: "SMS Outputs",
-    href: "/",
-  },
-];
+// const sections = [
+//   {
+//     label: "Executive Summary",
+//     href: "/",
+//   },
+//   {
+//     label: "Introduction",
+//     href: "/",
+//   },
+//   {
+//     label: "Project Background",
+//     href: "/",
+//   },
+//   {
+//     label: "Purpose",
+//     href: "/",
+//   },
+//   {
+//     label: "Scope",
+//     href: "/",
+//   },
+//   {
+//     label: "Abbreviations",
+//     href: "/",
+//   },
+//   {
+//     label: "Reference Material",
+//     href: "/",
+//   },
+//   {
+//     label: "System Description",
+//     href: "/",
+//   },
+//   {
+//     label: "Pipeline Design",
+//     href: "/",
+//   },
+//   {
+//     label: "Pipeline Specification",
+//     href: "/",
+//   },
+//   {
+//     label: "Location",
+//     href: "/",
+//   },
+//   {
+//     label: "Land Use",
+//     href: "/",
+//   },
+//   {
+//     label: "Location Class",
+//     href: "/",
+//   },
+//   {
+//     label: "Radiation Assessment",
+//     href: "/",
+//   },
+//   {
+//     label: "Safety Management Process",
+//     href: "/",
+//   },
+//   {
+//     label: "SMS Inputs",
+//     href: "/",
+//   },
+//   {
+//     label: "SMS Workshop",
+//     href: "/",
+//   },
+//   {
+//     label: "SMS Outputs",
+//     href: "/",
+//   },
+// ];
 
-type GetProposalSectionResponse = {
+type GetProposalResponse = {
   proposal_id: string;
-  section_name: string;
-  content: string;
-};
-
-type AiRevisionResponse = {
-  proposal_id: string;
-  section: string;
-  content: string;
+  sections: Record<string, string>;
 };
 
 const Page = () => {
@@ -102,101 +95,35 @@ const Page = () => {
   const [searchParams] = useSearchParams();
   const { id } = useParams();
 
-  const { data, error } = useQuery({
-    queryKey: [
-      "proposal-section",
-      id,
-      sections[Number(searchParams.get("section"))].label,
-    ],
+  const { data, error, isFetching } = useQuery({
+    queryKey: ["proposals", id],
     queryFn: async () => {
-      const res = await axios.get<GetProposalSectionResponse>(
-        `${
-          import.meta.env.VITE_API_URL
-        }/get-proposal-section?proposal_id=${id}&section_name=${
-          sections[Number(searchParams.get("section"))].label
-        }`
+      const res = await axios.get<GetProposalResponse>(
+        `${import.meta.env.VITE_API_URL}/get-proposal?proposal_id=${id}`
       );
 
       return res.data;
     },
   });
-
-  const aiRevision = useMutation({
-    mutationFn: async ({ userPrompt }: { userPrompt: string }) => {
-      let idx = searchParams.get("section");
-      if (!idx) {
-        idx = "0";
-      }
-
-      let sectionName: string = "";
-
-      const formData = new FormData();
-
-      formData.append("proposal_id", id!);
-      formData.append("section_name", sectionName);
-      formData.append("user_prompt", userPrompt);
-
-      const res = await axios.post<AiRevisionResponse>(
-        `${import.meta.env.VITE_API_URL}/generate-section`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      return res.data;
-    },
-    onSuccess: ({ content }) => {
-      let idx = searchParams.get("section");
-      if (!idx) {
-        idx = "0";
-      }
-
-      let sectionName: string = "";
-
-      toast.success(`Section '${sectionName}' updated.`);
-      setSectionContent(content);
-      setUserPrompt("");
-    },
-    onError: () => {
-      toast.error("Something went wrong, please try again.");
-    },
-  });
-
-  if (error) {
-    toast.error("Something went wrong, please try again.");
-
-    return null;
-  }
 
   useEffect(() => {
     if (data) {
-      setSectionContent(data.content);
+      let selectedSectionName = Object.keys(data.sections)[
+        Number(searchParams.get("section"))
+      ];
+
+      setSectionContent(data.sections[selectedSectionName]);
     }
-  }, [data]);
+  }, [data, searchParams.get("section")]);
 
-  // useEffect(() => {
-  //   if (!data) {
-  //     return;
-  //   }
+  if (isFetching) {
+    return <div>Loading...</div>;
+  }
 
-  //   let idx = searchParams.get("section");
-  //   if (!idx) {
-  //     idx = "0";
-  //   }
-
-  //   let section: string = data.sections[0];
-
-  //   Object.keys(data.sections).forEach((s, i) => {
-  //     if (i.toString() == idx) {
-  //       section = s;
-  //     }
-  //   });
-
-  //   setSectionContent(data.sections[section]);
-  // }, [data]);
+  if (!data || error) {
+    toast.error("Something went wrong, please reload the page.");
+    return null;
+  }
 
   return (
     <div className="grid grid-cols-12 min-h-screen p-4 gap-4">
@@ -210,11 +137,11 @@ const Page = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {sections.map((section, i) => {
+              {Object.keys(data.sections).map((s, i) => {
                 return (
                   <div key={i}>
                     <Link
-                      to={`/proposals/${id}?section=${i}`}
+                      to={`/proposals/${data.proposal_id}?section=${i}`}
                       className={buttonVariants({
                         variant:
                           searchParams.get("section") === i.toString()
@@ -223,7 +150,7 @@ const Page = () => {
                         className: "w-full justify-start rounded-lg",
                       })}
                     >
-                      {section.label}
+                      {s}
                     </Link>
                   </div>
                 );
@@ -242,11 +169,11 @@ const Page = () => {
                   idx = "0";
                 }
 
-                let section: string = "";
+                let section;
 
-                sections.forEach((s, i) => {
-                  if (i.toString() === idx) {
-                    section = s.label;
+                Object.keys(data.sections).forEach((s, i) => {
+                  if (i.toString() == idx) {
+                    section = s;
                   }
                 });
 
@@ -270,7 +197,7 @@ const Page = () => {
                 onChange={(e) => setUserPrompt(e.target.value)}
               />
             </div>
-            <div className="mt-8 flex flex-col justify-center items-center space-y-3">
+            {/* <div className="mt-8 flex flex-col justify-center items-center space-y-3">
               <Button
                 onClick={() => {
                   aiRevision.mutate({
@@ -285,7 +212,7 @@ const Page = () => {
               <Button variant="secondary" disabled>
                 Finalize section
               </Button>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>

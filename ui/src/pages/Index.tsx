@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { v4 } from "uuid";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   projectName: z.any(),
@@ -41,9 +42,7 @@ const formSchema = z.object({
 
 type GenerateProposalResponse = {
   proposal_id: string;
-  section_name: Record<string, string>;
-  original_content: string;
-  updated_content: string;
+  sections: Record<string, string>;
 };
 
 const Page = () => {
@@ -53,7 +52,6 @@ const Page = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
       const formData = new FormData();
-      formData.append("proposal_id", v4());
       formData.append("report_type", "HDPE");
       formData.append("customer_name", "Santos");
       formData.append("project_name", payload.projectName);
@@ -62,7 +60,7 @@ const Page = () => {
       formData.append("meeting_minutes", payload.meetingMinutes);
 
       const res = await axios.post<GenerateProposalResponse>(
-        `${import.meta.env.VITE_API_URL}/generate-section`,
+        `${import.meta.env.VITE_API_URL}/generate-proposal`,
         formData
       );
 
@@ -277,7 +275,14 @@ const Page = () => {
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Generating Proposal..." : "Submit"}
+                {isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Generating Proposal
+                  </>
+                ) : (
+                  "Submit"
+                )}
               </Button>
             </CardFooter>
           </Card>
