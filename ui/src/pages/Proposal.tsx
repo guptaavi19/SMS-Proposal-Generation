@@ -8,6 +8,8 @@ import { ChevronLeftCircle, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import JoditEditor from "jodit-react";
+import { marked } from "marked";
 
 // const sections = [
 //   {
@@ -107,13 +109,16 @@ const Page = () => {
   });
 
   useEffect(() => {
-    if (data) {
-      let selectedSectionName = Object.keys(data.sections)[
-        Number(searchParams.get("section"))
-      ];
+    (async () => {
+      if (data) {
+        let selectedSectionName = Object.keys(data.sections)[
+          Number(searchParams.get("section"))
+        ];
 
-      setSectionContent(data.sections[selectedSectionName]);
-    }
+        let htmlContent = await marked(data.sections[selectedSectionName]);
+        setSectionContent(htmlContent);
+      }
+    })();
   }, [data, searchParams.get("section")]);
 
   if (isFetching) {
@@ -186,7 +191,12 @@ const Page = () => {
               <Pencil className="h-4 w-4" />
             </div>
             <div className="mt-8">
-              <Textarea rows={5} value={sectionContent} />
+              {/* <Textarea rows={5} value={sectionContent} /> */}
+
+              <JoditEditor
+                value={sectionContent}
+                onChange={(newContent) => setSectionContent(newContent)}
+              />
             </div>
             <div className="mt-8">
               <Label>AI Prompt</Label>
@@ -197,22 +207,12 @@ const Page = () => {
                 onChange={(e) => setUserPrompt(e.target.value)}
               />
             </div>
-            {/* <div className="mt-8 flex flex-col justify-center items-center space-y-3">
-              <Button
-                onClick={() => {
-                  aiRevision.mutate({
-                    userPrompt,
-                  });
-                }}
-              >
-                {aiRevision.isPending
-                  ? "Applying AI Revision..."
-                  : "Apply AI Revision"}
-              </Button>
+            <div className="mt-8 flex flex-col justify-center items-center space-y-3">
+              <Button>Apply AI Revision</Button>
               <Button variant="secondary" disabled>
                 Finalize section
               </Button>
-            </div> */}
+            </div>
           </CardContent>
         </Card>
       </div>
