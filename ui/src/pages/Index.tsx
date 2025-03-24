@@ -42,7 +42,9 @@ const formSchema = z.object({
 
 type GenerateProposalResponse = {
   proposal_id: string;
-  sections: Record<string, string>;
+  section_name: Record<string, string>;
+  original_content: string;
+  updated_content: string;
 };
 
 const Page = () => {
@@ -52,6 +54,7 @@ const Page = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
       const formData = new FormData();
+      formData.append("proposal_id", v4());
       formData.append("report_type", "HDPE");
       formData.append("customer_name", "Santos");
       formData.append("project_name", payload.projectName);
@@ -60,7 +63,7 @@ const Page = () => {
       formData.append("meeting_minutes", payload.meetingMinutes);
 
       const res = await axios.post<GenerateProposalResponse>(
-        `${import.meta.env.VITE_API_URL}/generate-proposal`,
+        `${import.meta.env.VITE_API_URL}/generate-section`,
         formData
       );
 
