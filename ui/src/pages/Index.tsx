@@ -86,7 +86,7 @@ const Page = () => {
   );
 
   return (
-    <main className="min-h-screen bg-slate-200">
+    <main className="h-screen overflow-auto py-8 bg-slate-200">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
