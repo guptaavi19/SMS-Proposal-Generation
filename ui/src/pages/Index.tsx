@@ -61,6 +61,7 @@ const Page = () => {
       formData.append("project_number", payload.projectNumber);
       formData.append("location", payload.location);
       formData.append("meeting_minutes", payload.meetingMinutes);
+      formData.append("section_name", "Executive Summary");
 
       const res = await axios.post<GenerateProposalResponse>(
         `${import.meta.env.VITE_API_URL}/generate-section`,
