@@ -260,6 +260,7 @@ const Page = () => {
                               formData.append("proposal_id", id!);
                               formData.append("section_name", section.label);
                               formData.append("user_prompt", userPrompt);
+                              formData.append("report_type", "HDPE");
 
                               await axios.post<AiRevisionResponse>(
                                 `${
