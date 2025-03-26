@@ -48,6 +48,8 @@ const formSchema = z.object({
   threatRegister: z.any(),
   closeOutRegister: z.any(),
   overviewMap: z.any(),
+  landUseQuestionnaire: z.any(),
+  billOfMaterials: z.any(),
 });
 
 type SaveProjectResponse = {
@@ -97,6 +99,8 @@ const Page = () => {
       formData.append("meeting_minutes", payload.meetingMinutes);
       formData.append("threat_register", payload.threatRegister);
       formData.append("close_out_register", payload.closeOutRegister);
+      formData.append("land_use_questionnaire", payload.landUseQuestionnaire);
+      formData.append("bill_of_materials", payload.billOfMaterials);
 
       const res = await http.post<SaveProjectResponse>("/projects", formData);
 
@@ -135,98 +139,106 @@ const Page = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="container mx-auto min-h-screen flex flex-col justify-center"
         >
-          <div className="grid grid-cols-12 gap-4">
+          <div className="flex justify-end">
+            <img src="/assets/logo.png" />
+          </div>
+
+          <Card className="mt-6">
+            <CardContent>
+              <div className="grid grid-cols-12 gap-4">
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="reportType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Report Type</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={!customerQuery.data}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a report type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {reportTypeQuery.data &&
+                            reportTypeQuery.data.data.reportTypes ? (
+                              reportTypeQuery.data.data.reportTypes.map(
+                                (reportType, i) => {
+                                  return (
+                                    <SelectItem
+                                      key={i}
+                                      value={reportType.apiName}
+                                    >
+                                      {reportType.displayName}
+                                    </SelectItem>
+                                  );
+                                }
+                              )
+                            ) : (
+                              <></>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="col-span-6">
+                  <FormField
+                    control={form.control}
+                    name="customerId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Customer</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          disabled={!customerQuery.data}
+                        >
+                          <FormControl className="w-full">
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a customer" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {customerQuery.data &&
+                            customerQuery.data.data.customers ? (
+                              customerQuery.data.data.customers.map(
+                                (customer, i) => {
+                                  return (
+                                    <SelectItem key={i} value={customer.id}>
+                                      {customer.name}
+                                    </SelectItem>
+                                  );
+                                }
+                              )
+                            ) : (
+                              <></>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-12 gap-4 mt-6">
             <div className="col-span-6">
               <Card className="mx-auto">
                 <CardHeader>
                   <CardTitle>Project Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-12 gap-4">
-                    <div className="col-span-6">
-                      <FormField
-                        control={form.control}
-                        name="reportType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Report Type</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              disabled={!customerQuery.data}
-                            >
-                              <FormControl className="w-full">
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a report type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {reportTypeQuery.data &&
-                                reportTypeQuery.data.data.reportTypes ? (
-                                  reportTypeQuery.data.data.reportTypes.map(
-                                    (reportType, i) => {
-                                      return (
-                                        <SelectItem
-                                          key={i}
-                                          value={reportType.apiName}
-                                        >
-                                          {reportType.displayName}
-                                        </SelectItem>
-                                      );
-                                    }
-                                  )
-                                ) : (
-                                  <></>
-                                )}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="col-span-6">
-                      <FormField
-                        control={form.control}
-                        name="customerId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Customer</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              disabled={!customerQuery.data}
-                            >
-                              <FormControl className="w-full">
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a customer" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {customerQuery.data &&
-                                customerQuery.data.data.customers ? (
-                                  customerQuery.data.data.customers.map(
-                                    (customer, i) => {
-                                      return (
-                                        <SelectItem key={i} value={customer.id}>
-                                          {customer.name}
-                                        </SelectItem>
-                                      );
-                                    }
-                                  )
-                                ) : (
-                                  <></>
-                                )}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
                   <FormField
                     control={form.control}
                     name="projectName"
@@ -400,6 +412,46 @@ const Page = () => {
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
                       <FormLabel>Overview Map</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...fieldProps}
+                          type="file"
+                          onChange={(e) => {
+                            onChange(e.target.files && e.target.files[0]);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="landUseQuestionnaire"
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
+                    <FormItem>
+                      <FormLabel>Land Use Questionnaire</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...fieldProps}
+                          type="file"
+                          onChange={(e) => {
+                            onChange(e.target.files && e.target.files[0]);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="billOfMaterials"
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
+                    <FormItem>
+                      <FormLabel>Bill of Materials</FormLabel>
                       <FormControl>
                         <Input
                           {...fieldProps}
