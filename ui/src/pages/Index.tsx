@@ -20,12 +20,22 @@ import { useForm } from "react-hook-form";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { v4 } from "uuid";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import { http } from "@/lib/utils";
+import { Customer, Project, ReportType } from "@/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
+  customerId: z.any(),
+  reportType: z.any(),
+
   projectName: z.any(),
   projectNumber: z.any(),
   location: z.any(),
@@ -40,39 +50,63 @@ const formSchema = z.object({
   overviewMap: z.any(),
 });
 
-type GenerateProposalResponse = {
-  proposal_id: string;
-  section_name: Record<string, string>;
-  original_content: string;
-  updated_content: string;
+type SaveProjectResponse = {
+  message: string;
+  data: {
+    project: Project;
+  };
 };
 
 const Page = () => {
   const form = useForm<z.infer<typeof formSchema>>({});
   const navigate = useNavigate();
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (payload: z.infer<typeof formSchema>) => {
-      const formData = new FormData();
-      formData.append("proposal_id", v4());
-      formData.append("report_type", "HDPE");
-      formData.append("customer_name", "Santos");
-      formData.append("project_name", payload.projectName);
-      formData.append("project_number", payload.projectNumber);
-      formData.append("location", payload.location);
-      formData.append("meeting_minutes", payload.meetingMinutes);
-      formData.append("section_name", "Executive Summary");
-
-      const res = await axios.post<GenerateProposalResponse>(
-        `${import.meta.env.VITE_API_URL}/generate-section`,
-        formData
+  const reportTypeQuery = useQuery({
+    queryKey: ["report_types"],
+    queryFn: async () => {
+      const res = await http.get<{ data: { reportTypes: ReportType[] } }>(
+        "/report-types"
       );
 
       return res.data;
     },
-    onSuccess: ({ proposal_id }) => {
+  });
+
+  const customerQuery = useQuery({
+    queryKey: ["customers"],
+    queryFn: async () => {
+      const res = await http.get<{ data: { customers: Customer[] } }>(
+        "/customers"
+      );
+
+      return res.data;
+    },
+  });
+
+  const saveProject = useMutation({
+    mutationFn: async (payload: z.infer<typeof formSchema>) => {
+      const formData = new FormData();
+      formData.append("customer_id", payload.customerId);
+      formData.append("report_type", payload.reportType);
+      formData.append("project_name", payload.projectName);
+      formData.append("project_number", payload.projectNumber);
+      formData.append("project_location", payload.location);
+      formData.append("originator", payload.originator);
+      formData.append("reviewer", payload.reviewer);
+      formData.append("approver", payload.approver);
+      formData.append("meeting_minutes", payload.meetingMinutes);
+      formData.append("threat_register", payload.threatRegister);
+      formData.append("close_out_register", payload.closeOutRegister);
+
+      const res = await http.post<SaveProjectResponse>("/projects", formData);
+
+      return res.data;
+    },
+    onSuccess: ({ data }) => {
       toast.success("Proposal generated! Redirecting...");
-      navigate(`/proposals/${proposal_id}?section=0`);
+      navigate(
+        `/projects/${data.project.id}/sections/${data.project.sections[0].id}`
+      );
     },
     onError: () => {
       toast.error("Something went wrong, please try again.");
@@ -81,10 +115,18 @@ const Page = () => {
 
   const onSubmit = useCallback(
     (payload: z.infer<typeof formSchema>) => {
-      mutate(payload);
+      saveProject.mutate(payload);
     },
-    [mutate]
+    [saveProject.mutate]
   );
+
+  if (reportTypeQuery.error) {
+    toast.error("Error fetching report types.");
+  }
+
+  if (customerQuery.error) {
+    toast.error("Error fetching customers.");
+  }
 
   return (
     <main className="h-screen overflow-auto py-8 bg-slate-200">
@@ -100,6 +142,91 @@ const Page = () => {
                   <CardTitle>Project Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-6">
+                      <FormField
+                        control={form.control}
+                        name="reportType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Report Type</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              disabled={!customerQuery.data}
+                            >
+                              <FormControl className="w-full">
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a report type" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {reportTypeQuery.data &&
+                                reportTypeQuery.data.data.reportTypes ? (
+                                  reportTypeQuery.data.data.reportTypes.map(
+                                    (reportType, i) => {
+                                      return (
+                                        <SelectItem
+                                          key={i}
+                                          value={reportType.apiName}
+                                        >
+                                          {reportType.displayName}
+                                        </SelectItem>
+                                      );
+                                    }
+                                  )
+                                ) : (
+                                  <></>
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-6">
+                      <FormField
+                        control={form.control}
+                        name="customerId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Customer</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              disabled={!customerQuery.data}
+                            >
+                              <FormControl className="w-full">
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a customer" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {customerQuery.data &&
+                                customerQuery.data.data.customers ? (
+                                  customerQuery.data.data.customers.map(
+                                    (customer, i) => {
+                                      return (
+                                        <SelectItem key={i} value={customer.id}>
+                                          {customer.name}
+                                        </SelectItem>
+                                      );
+                                    }
+                                  )
+                                ) : (
+                                  <></>
+                                )}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="projectName"
@@ -146,7 +273,7 @@ const Page = () => {
             </div>
 
             <div className="col-span-6">
-              <Card className="mx-auto">
+              <Card className="mx-auto h-full">
                 <CardHeader>
                   <CardTitle>QA Inputs</CardTitle>
                 </CardHeader>
@@ -288,8 +415,8 @@ const Page = () => {
                 />
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? (
+                <Button type="submit" disabled={saveProject.isPending}>
+                  {saveProject.isPending ? (
                     <>
                       <Loader2 className="animate-spin" />
                       Generating Proposal
