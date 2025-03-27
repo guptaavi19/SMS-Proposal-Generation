@@ -95,6 +95,10 @@ const Page = () => {
     return null;
   }
 
+  useEffect(() => {
+    setUserPrompt("");
+  }, []);
+
   return (
     <>
       <div className="grid grid-cols-12 min-h-screen p-4 gap-4">
