@@ -97,7 +97,7 @@ const Page = () => {
 
   useEffect(() => {
     setUserPrompt("");
-  }, []);
+  }, [sectionId]);
 
   return (
     <>
