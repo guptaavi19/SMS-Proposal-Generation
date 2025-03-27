@@ -2,7 +2,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronLeftCircle, Loader2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -12,13 +12,19 @@ import { marked } from "marked";
 import { http } from "@/lib/utils";
 import { Section } from "@/types";
 
-export type GetSectionsResponse = {
+type GetSectionsResponse = {
   data: {
     sections: Section[];
   };
 };
 
-export type GetSectionResponse = {
+type GetSectionResponse = {
+  data: {
+    section: Section;
+  };
+};
+
+type UpdateSectionResponse = {
   data: {
     section: Section;
   };
@@ -48,6 +54,28 @@ const Page = () => {
       );
 
       return res.data;
+    },
+  });
+
+  const updateSection = useMutation({
+    mutationFn: async ({ userPrompt }: { userPrompt: string }) => {
+      const formData = new FormData();
+      formData.append("user_prompt", userPrompt);
+
+      const res = await http.patch<UpdateSectionResponse>(
+        `/projects/${projectId}/sections/${sectionId}`,
+        formData
+      );
+
+      return res.data;
+    },
+    onSuccess: async ({ data }) => {
+      toast.success("AI revision applied!");
+      let htmlContent = await marked(data.section.response);
+      setSectionContent(htmlContent);
+    },
+    onError: () => {
+      toast.error("Something went wrong, please try again.");
     },
   });
 
@@ -170,16 +198,20 @@ const Page = () => {
               </div>
               <div className="mt-8 flex flex-col justify-center items-center space-y-3">
                 <Button
-                // onClick={() => {
-                //   aiRevision.mutate({
-                //     userPrompt,
-                //   });
-                // }}
+                  onClick={() => {
+                    updateSection.mutate({
+                      userPrompt,
+                    });
+                  }}
                 >
-                  {/* {aiRevision.isPending
-                  ? "Applying AI Revision..."
-                  : "Apply AI Revision"} */}
-                  Apply AI Revision
+                  {updateSection.isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Applying AI Revision
+                    </>
+                  ) : (
+                    "Apply AI Revision"
+                  )}
                 </Button>
                 <Button variant="secondary" disabled>
                   Finalize section

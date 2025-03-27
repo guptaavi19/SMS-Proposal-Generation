@@ -13,6 +13,7 @@ export type ReportType = {
 export type Project = {
   id: string;
   customerId: string;
+  reportType: string;
   name: string;
   number: string;
   location: string;
