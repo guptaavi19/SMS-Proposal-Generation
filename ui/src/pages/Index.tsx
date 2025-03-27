@@ -431,7 +431,7 @@ const Page = () => {
                   name="landUseQuestionnaire"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Land Use Questionnaire</FormLabel>
+                      <FormLabel>Land Use Questionnaire(LUQ)</FormLabel>
                       <FormControl>
                         <Input
                           {...fieldProps}
@@ -451,7 +451,7 @@ const Page = () => {
                   name="billOfMaterials"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Bill of Materials</FormLabel>
+                      <FormLabel>Bill of Materials(BOM)</FormLabel>
                       <FormControl>
                         <Input
                           {...fieldProps}
