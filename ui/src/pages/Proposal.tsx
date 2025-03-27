@@ -203,6 +203,7 @@ const Page = () => {
                       userPrompt,
                     });
                   }}
+                  disabled={updateSection.isPending}
                 >
                   {updateSection.isPending ? (
                     <>
