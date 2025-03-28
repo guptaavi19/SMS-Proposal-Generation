@@ -119,6 +119,7 @@ const Page = () => {
       formData.append("meeting_minutes", payload.meetingMinutes);
       formData.append("threat_register", payload.threatRegister);
       formData.append("close_out_register", payload.closeOutRegister);
+      formData.append("overview_map", payload.overviewMap);
       formData.append("land_use_questionnaire", payload.landUseQuestionnaire);
       formData.append("bill_of_material", payload.billOfMaterial);
 
