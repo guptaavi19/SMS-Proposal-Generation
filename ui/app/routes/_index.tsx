@@ -1,12 +1,17 @@
+import type { MetaFunction } from "@remix-run/node";
+import { useLoaderData, useNavigate } from "@remix-run/react";
+import { Loader2 } from "lucide-react";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "../components/ui/button";
+} from "~/components/ui/card";
 import {
   Form,
   FormControl,
@@ -14,23 +19,26 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../components/ui/form";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { http } from "@/lib/utils";
-import { Customer, Project, ReportType } from "@/types";
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "~/components/ui/select";
+import { http } from "~/lib/utils";
+import { Customer, Project, ReportType } from "~/types";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "New Remix App" },
+    { name: "description", content: "Welcome to Remix!" },
+  ];
+};
 
 const formSchema = z.object({
   customerId: z.any(),
@@ -59,31 +67,33 @@ type SaveProjectResponse = {
   };
 };
 
+export const loader = async () => {
+  let reportTypes: ReportType[] = [];
+  let customers: Customer[] = [];
+
+  try {
+    const [reportTypesRes, customersRes] = await Promise.all([
+      await http.get<{ data: { reportTypes: ReportType[] } }>("/report-types"),
+      await http.get<{ data: { customers: Customer[] } }>("/customers"),
+    ]);
+
+    reportTypes = reportTypesRes.data.data.reportTypes;
+    customers = customersRes.data.data.customers;
+  } catch (e) {
+    console.log(e);
+  }
+
+  return {
+    reportTypes,
+    customers,
+  };
+};
+
 const Page = () => {
+  const { reportTypes, customers } = useLoaderData<typeof loader>();
+  // TODO: Add defaultValues
   const form = useForm<z.infer<typeof formSchema>>({});
   const navigate = useNavigate();
-
-  const reportTypeQuery = useQuery({
-    queryKey: ["report_types"],
-    queryFn: async () => {
-      const res = await http.get<{ data: { reportTypes: ReportType[] } }>(
-        "/report-types"
-      );
-
-      return res.data;
-    },
-  });
-
-  const customerQuery = useQuery({
-    queryKey: ["customers"],
-    queryFn: async () => {
-      const res = await http.get<{ data: { customers: Customer[] } }>(
-        "/customers"
-      );
-
-      return res.data;
-    },
-  });
 
   const saveProject = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
@@ -124,16 +134,8 @@ const Page = () => {
     [saveProject.mutate]
   );
 
-  if (reportTypeQuery.error) {
-    toast.error("Error fetching report types.");
-  }
-
-  if (customerQuery.error) {
-    toast.error("Error fetching customers.");
-  }
-
   return (
-    <main className="h-screen overflow-auto py-8 bg-slate-200">
+    <div className="h-screen overflow-auto py-8 bg-slate-200">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -144,7 +146,7 @@ const Page = () => {
           </div>
 
           <Card className="mt-6">
-            <CardContent>
+            <CardContent className="p-6">
               <div className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
                   <FormField
@@ -156,7 +158,7 @@ const Page = () => {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          disabled={!customerQuery.data}
+                          disabled={reportTypes.length === 0}
                         >
                           <FormControl className="w-full">
                             <SelectTrigger>
@@ -164,23 +166,13 @@ const Page = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {reportTypeQuery.data &&
-                            reportTypeQuery.data.data.reportTypes ? (
-                              reportTypeQuery.data.data.reportTypes.map(
-                                (reportType, i) => {
-                                  return (
-                                    <SelectItem
-                                      key={i}
-                                      value={reportType.apiName}
-                                    >
-                                      {reportType.displayName}
-                                    </SelectItem>
-                                  );
-                                }
-                              )
-                            ) : (
-                              <></>
-                            )}
+                            {reportTypes.map((reportType, i) => {
+                              return (
+                                <SelectItem key={i} value={reportType.apiName}>
+                                  {reportType.displayName}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -199,7 +191,7 @@ const Page = () => {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          disabled={!customerQuery.data}
+                          disabled={customers.length === 0}
                         >
                           <FormControl className="w-full">
                             <SelectTrigger>
@@ -207,20 +199,13 @@ const Page = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {customerQuery.data &&
-                            customerQuery.data.data.customers ? (
-                              customerQuery.data.data.customers.map(
-                                (customer, i) => {
-                                  return (
-                                    <SelectItem key={i} value={customer.id}>
-                                      {customer.name}
-                                    </SelectItem>
-                                  );
-                                }
-                              )
-                            ) : (
-                              <></>
-                            )}
+                            {customers.map((customer, i) => {
+                              return (
+                                <SelectItem key={i} value={customer.id}>
+                                  {customer.name}
+                                </SelectItem>
+                              );
+                            })}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -482,7 +467,7 @@ const Page = () => {
           </div>
         </form>
       </Form>
-    </main>
+    </div>
   );
 };
 
