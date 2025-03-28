@@ -57,7 +57,7 @@ const formSchema = z.object({
   closeOutRegister: z.any(),
   overviewMap: z.any(),
   landUseQuestionnaire: z.any(),
-  billOfMaterials: z.any(),
+  billOfMaterial: z.any(),
 });
 
 type SaveProjectResponse = {
@@ -91,8 +91,18 @@ export const loader = async () => {
 
 const Page = () => {
   const { reportTypes, customers } = useLoaderData<typeof loader>();
-  // TODO: Add defaultValues
-  const form = useForm<z.infer<typeof formSchema>>({});
+  const form = useForm<z.infer<typeof formSchema>>({
+    defaultValues: {
+      customerId: "",
+      reportType: "",
+      projectName: "",
+      projectNumber: "",
+      location: "",
+      originator: "",
+      reviewer: "",
+      approver: "",
+    },
+  });
   const navigate = useNavigate();
 
   const saveProject = useMutation({
@@ -110,7 +120,7 @@ const Page = () => {
       formData.append("threat_register", payload.threatRegister);
       formData.append("close_out_register", payload.closeOutRegister);
       formData.append("land_use_questionnaire", payload.landUseQuestionnaire);
-      formData.append("bill_of_materials", payload.billOfMaterials);
+      formData.append("bill_of_material", payload.billOfMaterial);
 
       const res = await http.post<SaveProjectResponse>("/projects", formData);
 
@@ -341,8 +351,9 @@ const Page = () => {
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
@@ -361,8 +372,9 @@ const Page = () => {
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
@@ -381,8 +393,9 @@ const Page = () => {
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
@@ -401,8 +414,9 @@ const Page = () => {
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
@@ -421,8 +435,9 @@ const Page = () => {
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
@@ -433,16 +448,17 @@ const Page = () => {
 
                 <FormField
                   control={form.control}
-                  name="billOfMaterials"
+                  name="billOfMaterial"
                   render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
-                      <FormLabel>Bill of Materials(BOM)</FormLabel>
+                      <FormLabel>Bill of Material (BOM)</FormLabel>
                       <FormControl>
                         <Input
                           {...fieldProps}
                           type="file"
+                          multiple
                           onChange={(e) => {
-                            onChange(e.target.files && e.target.files[0]);
+                            onChange(e.target.files);
                           }}
                         />
                       </FormControl>
