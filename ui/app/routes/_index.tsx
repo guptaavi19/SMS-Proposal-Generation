@@ -165,7 +165,10 @@ const Page = () => {
                     name="reportType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Report Type</FormLabel>
+                        <FormLabel>
+                          Report Type{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -198,7 +201,9 @@ const Page = () => {
                     name="customerId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Customer</FormLabel>
+                        <FormLabel>
+                          Customer <span className="text-destructive">*</span>
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -240,7 +245,10 @@ const Page = () => {
                     name="projectName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project Name</FormLabel>
+                        <FormLabel>
+                          Project Name{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input type="text" {...field} />
                         </FormControl>
@@ -254,7 +262,10 @@ const Page = () => {
                     name="projectNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project Number</FormLabel>
+                        <FormLabel>
+                          Project Number{" "}
+                          <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input type="text" {...field} />
                         </FormControl>
@@ -268,7 +279,9 @@ const Page = () => {
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Location</FormLabel>
+                        <FormLabel>
+                          Location <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input type="text" {...field} />
                         </FormControl>
@@ -291,7 +304,9 @@ const Page = () => {
                     name="originator"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Originator</FormLabel>
+                        <FormLabel>
+                          Originator <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="text"
@@ -309,7 +324,9 @@ const Page = () => {
                     name="reviewer"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Reviewer</FormLabel>
+                        <FormLabel>
+                          Reviewer <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input type="text" {...field} />
                         </FormControl>
@@ -323,7 +340,9 @@ const Page = () => {
                     name="approver"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Approver</FormLabel>
+                        <FormLabel>
+                          Approver <span className="text-destructive">*</span>
+                        </FormLabel>
                         <FormControl>
                           <Input type="text" {...field} />
                         </FormControl>
