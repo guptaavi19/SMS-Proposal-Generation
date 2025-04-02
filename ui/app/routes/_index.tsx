@@ -116,12 +116,42 @@ const Page = () => {
       formData.append("originator", payload.originator);
       formData.append("reviewer", payload.reviewer);
       formData.append("approver", payload.approver);
-      formData.append("meeting_minutes", payload.meetingMinutes);
-      formData.append("threat_register", payload.threatRegister);
-      formData.append("close_out_register", payload.closeOutRegister);
-      formData.append("overview_map", payload.overviewMap);
-      formData.append("land_use_questionnaire", payload.landUseQuestionnaire);
-      formData.append("bill_of_material", payload.billOfMaterial);
+
+      if (payload.meetingMinutes) {
+        Array.from(payload.meetingMinutes as FileList).forEach((file) => {
+          formData.append("meeting_minutes", file);
+        });
+      }
+
+      if (payload.threatRegister) {
+        Array.from(payload.threatRegister as FileList).forEach((file) => {
+          formData.append("threat_register", file);
+        });
+      }
+
+      if (payload.closeOutRegister) {
+        Array.from(payload.closeOutRegister as FileList).forEach((file) => {
+          formData.append("close_out_register", file);
+        });
+      }
+
+      if (payload.overviewMap) {
+        Array.from(payload.overviewMap as FileList).forEach((file) => {
+          formData.append("overview_map", file);
+        });
+      }
+
+      if (payload.landUseQuestionnaire) {
+        Array.from(payload.landUseQuestionnaire as FileList).forEach((file) => {
+          formData.append("land_use_questionnaire", file);
+        });
+      }
+
+      if (payload.billOfMaterial) {
+        Array.from(payload.billOfMaterial as FileList).forEach((file) => {
+          formData.append("bill_of_material", file);
+        });
+      }
 
       const res = await http.post<SaveProjectResponse>("/projects", formData);
 
@@ -477,7 +507,7 @@ const Page = () => {
                     name="landUseQuestionnaire"
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
-                        <FormLabel>Land Use Questionnaire(LUQ)</FormLabel>
+                        <FormLabel>Land Use Questionnaire (LUQ)</FormLabel>
                         <FormControl>
                           <Input
                             {...fieldProps}

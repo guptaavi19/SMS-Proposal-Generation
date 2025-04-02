@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
-import { ChevronLeftCircle, Loader2, Pencil } from "lucide-react";
-import { MouseEventHandler, useCallback, useEffect, useState } from "react";
+import { ChevronLeftCircle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -69,6 +69,7 @@ const Page = () => {
     useLoaderData<typeof loader>();
   const [sectionContent, setSectionContent] = useState<string>("");
   const [userPrompt, setUserPrompt] = useState<string>("");
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
   const [generatingSectionContent, setGeneratingSectionContent] = useState<{
     isGenerating: boolean;
     sectionName: string;
@@ -229,10 +230,26 @@ const Page = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-center">
-                <Pencil className="h-4 w-4" />
-              </div>
               <div className="mt-8">
+                {isReadOnly ? (
+                  <div className="bg-yellow-100 mb-4 px-4 py-3 flex items-center space-x-4 rounded-md">
+                    <div className="flex-1">
+                      Protected view is enabled. This is to prevent accidental
+                      editing of content.
+                    </div>
+                    <div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setIsReadOnly(false);
+                        }}
+                      >
+                        Enable Editing
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <ClientOnly
                   fallback={
                     <div className="flex justify-center">
@@ -245,6 +262,7 @@ const Page = () => {
                       value={sectionContent}
                       onBlur={(newContent) => setSectionContent(newContent)}
                       config={{
+                        readonly: isReadOnly,
                         showPlaceholder: sectionContent.length === 0,
                       }}
                     />
