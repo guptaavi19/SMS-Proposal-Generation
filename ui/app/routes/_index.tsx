@@ -158,7 +158,7 @@ const Page = () => {
       return res.data;
     },
     onSuccess: ({ data }) => {
-      toast.success("Proposal generated! Redirecting...");
+      toast.success("Draft generated!");
       navigate(
         `/projects/${data.project.id}/sections/${data.project.sections[0].id}`
       );
@@ -193,7 +193,7 @@ const Page = () => {
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
             <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
             <p className="mt-2 text-lg font-semibold">
-              Generating Proposal. Please wait...
+              Generating. Please wait...
             </p>
           </div>
         </div>

@@ -110,7 +110,12 @@ const Page = () => {
       };
     },
     onSuccess: async ({ res, isInitialGeneration }) => {
-      toast.success("AI revision applied!");
+      if (isInitialGeneration) {
+        toast.success(`${res.data.section.displayName} draft generated!`);
+      } else {
+        toast.success("AI revision applied!");
+      }
+
       if (isInitialGeneration) {
         navigate(`/projects/${projectId}/sections/${res.data.section.id}`);
       } else {
