@@ -4,12 +4,16 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
-
+import nprogress from "nprogress";
 import "./tailwind.css";
+import "./style.css";
+import "nprogress/nprogress.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/sonner";
+import { useEffect } from "react";
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -26,7 +30,23 @@ export const links: LinksFunction = () => [
 
 const queryClient = new QueryClient();
 
+nprogress.configure({
+  showSpinner: false,
+  speed: 400,
+  minimum: 0.2,
+});
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (navigation.state === "loading") {
+      nprogress.start();
+    } else {
+      nprogress.done();
+    }
+  }, [navigation.state]);
+
   return (
     <html lang="en">
       <head>
