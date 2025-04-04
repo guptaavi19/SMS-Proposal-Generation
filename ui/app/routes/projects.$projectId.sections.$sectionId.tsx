@@ -173,7 +173,7 @@ const Page = () => {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-12 min-h-screen p-4 gap-4">
+      <div className="grid grid-cols-12 min-h-screen p-4 gap-4 bg-slate-200">
         <div className="col-span-3 h-full">
           <Card className="h-full">
             <CardHeader className="">

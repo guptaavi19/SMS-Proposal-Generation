@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -424,16 +424,39 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Meeting Minutes</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("meetingMinutes") ||
+                              (form.getValues("meetingMinutes") as FileList)
+                                .length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("meetingMinutes");
+                              const el = document.querySelector(
+                                "input[name=meetingMinutes]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -445,16 +468,39 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Threat Register</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("threatRegister") ||
+                              (form.getValues("threatRegister") as FileList)
+                                .length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("threatRegister");
+                              const el = document.querySelector(
+                                "input[name=threatRegister]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -466,16 +512,39 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Close Out Register</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("closeOutRegister") ||
+                              (form.getValues("closeOutRegister") as FileList)
+                                .length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("closeOutRegister");
+                              const el = document.querySelector(
+                                "input[name=closeOutRegister]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -487,16 +556,39 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Overview Map</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("overviewMap") ||
+                              (form.getValues("overviewMap") as FileList)
+                                .length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("overviewMap");
+                              const el = document.querySelector(
+                                "input[name=overviewMap]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -508,16 +600,42 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Land Use Questionnaire (LUQ)</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("landUseQuestionnaire") ||
+                              (
+                                form.getValues(
+                                  "landUseQuestionnaire"
+                                ) as FileList
+                              ).length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("landUseQuestionnaire");
+                              const el = document.querySelector(
+                                "input[name=landUseQuestionnaire]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -529,16 +647,39 @@ const Page = () => {
                     render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Bill of Material (BOM)</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...fieldProps}
-                            type="file"
-                            multiple
-                            onChange={(e) => {
-                              onChange(e.target.files);
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              {...fieldProps}
+                              type="file"
+                              multiple
+                              onChange={(e) => {
+                                onChange(e.target.files);
+                              }}
+                            />
+                          </FormControl>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="outline"
+                            disabled={
+                              !form.getValues("billOfMaterial") ||
+                              (form.getValues("billOfMaterial") as FileList)
+                                .length === 0
+                            }
+                            onClick={() => {
+                              form.resetField("billOfMaterial");
+                              const el = document.querySelector(
+                                "input[name=billOfMaterial]"
+                              );
+                              if (el) {
+                                (el as HTMLInputElement).value = "";
+                              }
                             }}
-                          />
-                        </FormControl>
+                          >
+                            Clear
+                          </Button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
