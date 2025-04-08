@@ -13,6 +13,14 @@ import { Section } from "~/types";
 import { marked } from "marked";
 import JoditEditor from "~/components/jodit.client";
 import { ClientOnly } from "remix-utils/client-only";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "~/components/dropdown-menu";
 
 type Params = {
   projectId: string;
@@ -78,6 +86,9 @@ const Page = () => {
     sectionName: "",
   });
   const navigate = useNavigate();
+  const [visibleSections, setVisibleSections] = useState<string[]>(
+    sections.map((section) => section.apiName)
+  );
 
   const updateSection = useMutation({
     mutationFn: async ({
@@ -180,18 +191,55 @@ const Page = () => {
               <div>
                 <img src="/assets/logo.png" />
               </div>
-              <div className="flex flex-row items-center !mt-6">
-                <Link to="/" className="block">
-                  <ChevronLeftCircle />
-                </Link>
+              <div className="!mt-6">
+                <div className="flex flex-row items-center">
+                  <Link to="/" className="block">
+                    <ChevronLeftCircle />
+                  </Link>
 
-                <CardTitle className="text-xl ml-2">Sections</CardTitle>
+                  <CardTitle className="text-xl ml-2">Sections</CardTitle>
+                </div>
+                <div className="mt-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">Toggle Sections</Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {sections.map((section, i) => {
+                        return (
+                          <DropdownMenuCheckboxItem
+                            key={i}
+                            checked={visibleSections.includes(section.apiName)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setVisibleSections((visibleSections) => [
+                                  ...visibleSections,
+                                  section.apiName,
+                                ]);
+                              } else {
+                                setVisibleSections((visibleSections) => {
+                                  return visibleSections.filter(
+                                    (s) => s !== section.apiName
+                                  );
+                                });
+                              }
+                            }}
+                          >
+                            {section.displayName}
+                          </DropdownMenuCheckboxItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {sections.map((section, i) => {
                   let href = `/projects/${section.projectId}/sections/${section.id}`;
+
+                  if (!visibleSections.includes(section.apiName)) return null;
 
                   return (
                     <div key={i}>
