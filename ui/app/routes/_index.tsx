@@ -1,7 +1,7 @@
 import type { MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { Loader2, X } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
@@ -29,9 +29,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { http } from "~/lib/utils";
-import { Customer, Project, ReportType } from "~/types";
+import { Customer, Project, ReportType, Section } from "~/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Switch } from "~/components/ui/switch";
 
 export const meta: MetaFunction = () => {
   return [
@@ -70,15 +71,18 @@ type SaveProjectResponse = {
 export const loader = async () => {
   let reportTypes: ReportType[] = [];
   let customers: Customer[] = [];
+  let sections: Section[] = [];
 
   try {
-    const [reportTypesRes, customersRes] = await Promise.all([
+    const [reportTypesRes, customersRes, sectionsRes] = await Promise.all([
       await http.get<{ data: { reportTypes: ReportType[] } }>("/report-types"),
       await http.get<{ data: { customers: Customer[] } }>("/customers"),
+      await http.get<{ data: { sections: Section[] } }>("/sections"),
     ]);
 
     reportTypes = reportTypesRes.data.data.reportTypes;
     customers = customersRes.data.data.customers;
+    sections = sectionsRes.data.data.sections;
   } catch (e) {
     console.log(e);
   }
@@ -86,11 +90,12 @@ export const loader = async () => {
   return {
     reportTypes,
     customers,
+    sections,
   };
 };
 
 const Page = () => {
-  const { reportTypes, customers } = useLoaderData<typeof loader>();
+  const { reportTypes, customers, sections } = useLoaderData<typeof loader>();
   const form = useForm<z.infer<typeof formSchema>>({
     defaultValues: {
       customerId: "",
@@ -104,6 +109,9 @@ const Page = () => {
     },
   });
   const navigate = useNavigate();
+  const [selectedSections, setSelectedSections] = useState<string[]>(
+    sections.map((section) => section.apiName)
+  );
 
   const saveProject = useMutation({
     mutationFn: async (payload: z.infer<typeof formSchema>) => {
@@ -684,6 +692,38 @@ const Page = () => {
                       </FormItem>
                     )}
                   />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sections</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sections.map((section, i) => (
+                    <div key={i} className="flex items-center py-4 border-b">
+                      <div className="flex-1">{section.displayName}</div>
+                      <Switch
+                        checked={selectedSections.includes(section.apiName)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedSections((selectedSections) => [
+                              ...selectedSections,
+                              section.apiName,
+                            ]);
+                          } else {
+                            setSelectedSections((selectedSections) => {
+                              return selectedSections.filter(
+                                (s) => s !== section.apiName
+                              );
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  ))}
                 </CardContent>
                 <CardFooter className="flex justify-end">
                   <Button type="submit" disabled={saveProject.isPending}>
