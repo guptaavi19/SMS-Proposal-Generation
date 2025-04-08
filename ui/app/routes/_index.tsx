@@ -42,6 +42,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
+import axios from "axios";
 
 export const meta: MetaFunction = () => {
   return [
@@ -180,8 +181,16 @@ const Page = () => {
         `/projects/${data.project.id}/sections/${data.project.sections[0].id}`
       );
     },
-    onError: () => {
-      toast.error("Something went wrong, please try again.");
+    onError: (e) => {
+      let message = "Something went wrong, please try again.";
+
+      if (axios.isAxiosError(e) && e.response) {
+        if (Object.keys(e.response.data).includes("message")) {
+          message = e.response.data.message;
+        }
+      }
+
+      toast.error(message);
     },
   });
 
@@ -743,7 +752,15 @@ const Page = () => {
                         ))}
                       </div>
                       <DialogFooter>
-                        <Button type="submit" disabled={saveProject.isPending}>
+                        <Button
+                          type="submit"
+                          disabled={saveProject.isPending}
+                          onClick={() =>
+                            document
+                              .getElementById("real-submit-button")!
+                              .click()
+                          }
+                        >
                           {saveProject.isPending ? (
                             <>
                               <Loader2 className="animate-spin" />
@@ -757,6 +774,13 @@ const Page = () => {
                     </DialogContent>
                   </Dialog>
                 </CardFooter>
+                <Button
+                  id="real-submit-button"
+                  type="submit"
+                  className="hidden"
+                >
+                  Submit
+                </Button>
               </Card>
             </div>
           </form>
