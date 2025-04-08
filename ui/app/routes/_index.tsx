@@ -33,6 +33,15 @@ import { Customer, Project, ReportType, Section } from "~/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Switch } from "~/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
 
 export const meta: MetaFunction = () => {
   return [
@@ -693,49 +702,60 @@ const Page = () => {
                     )}
                   />
                 </CardContent>
-              </Card>
-            </div>
-
-            <div className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Sections</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {sections.map((section, i) => (
-                    <div key={i} className="flex items-center py-4 border-b">
-                      <div className="flex-1">{section.displayName}</div>
-                      <Switch
-                        checked={selectedSections.includes(section.apiName)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedSections((selectedSections) => [
-                              ...selectedSections,
-                              section.apiName,
-                            ]);
-                          } else {
-                            setSelectedSections((selectedSections) => {
-                              return selectedSections.filter(
-                                (s) => s !== section.apiName
-                              );
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  ))}
-                </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button type="submit" disabled={saveProject.isPending}>
-                    {saveProject.isPending ? (
-                      <>
-                        <Loader2 className="animate-spin" />
-                        Generating Proposal
-                      </>
-                    ) : (
-                      "Submit"
-                    )}
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>Submit</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>
+                          Finalize sections and generate draft
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        {sections.map((section, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center py-4 border-b"
+                          >
+                            <div className="flex-1">{section.displayName}</div>
+                            <Switch
+                              checked={selectedSections.includes(
+                                section.apiName
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedSections((selectedSections) => [
+                                    ...selectedSections,
+                                    section.apiName,
+                                  ]);
+                                } else {
+                                  setSelectedSections((selectedSections) => {
+                                    return selectedSections.filter(
+                                      (s) => s !== section.apiName
+                                    );
+                                  });
+                                }
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={saveProject.isPending}>
+                          {saveProject.isPending ? (
+                            <>
+                              <Loader2 className="animate-spin" />
+                              Generating Proposal
+                            </>
+                          ) : (
+                            "Submit"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </CardFooter>
               </Card>
             </div>
