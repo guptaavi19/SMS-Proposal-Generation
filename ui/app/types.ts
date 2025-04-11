@@ -41,3 +41,9 @@ export type Section = {
   createdAt: string;
   updatedAt: string;
 };
+
+export enum Role {
+  GRADUATE_ENGINEER = "graduate_engineer",
+  MECHANICAL_ENGINEER = "mechanical_engineer",
+  LEAD_ENGINEER = "lead_engineer",
+}

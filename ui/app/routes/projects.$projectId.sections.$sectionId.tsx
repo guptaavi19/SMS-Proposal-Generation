@@ -95,13 +95,21 @@ const Page = () => {
       section,
       userPrompt,
       isInitialGeneration,
+      isAiRevision,
     }: {
       section: Section;
       userPrompt: string;
       isInitialGeneration: boolean;
+      isAiRevision: boolean;
     }) => {
       const formData = new FormData();
       formData.append("user_prompt", userPrompt);
+
+      if (isAiRevision) {
+        formData.append("is_ai_revision", "yes");
+      } else {
+        formData.append("is_ai_revision", "no");
+      }
 
       if (isInitialGeneration) {
         setGeneratingSectionContent({
@@ -253,6 +261,7 @@ const Page = () => {
                               section: section,
                               userPrompt: "",
                               isInitialGeneration: true,
+                              isAiRevision: true,
                             });
 
                             return;
@@ -311,14 +320,32 @@ const Page = () => {
                   }
                 >
                   {() => (
-                    <JoditEditor
-                      value={sectionContent}
-                      onBlur={(newContent) => setSectionContent(newContent)}
-                      config={{
-                        readonly: isReadOnly,
-                        showPlaceholder: sectionContent.length === 0,
-                      }}
-                    />
+                    <div>
+                      <JoditEditor
+                        value={sectionContent}
+                        onBlur={(newContent) => setSectionContent(newContent)}
+                        config={{
+                          readonly: isReadOnly,
+                          showPlaceholder: sectionContent.length === 0,
+                        }}
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          className="mt-4"
+                          onClick={() => {
+                            updateSection.mutate({
+                              section: activeSection,
+                              userPrompt: sectionContent,
+                              isInitialGeneration: false,
+                              isAiRevision: false,
+                            });
+                          }}
+                          disabled={updateSection.isPending}
+                        >
+                          Save as Draft
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </ClientOnly>
               </div>
@@ -338,6 +365,7 @@ const Page = () => {
                       section: activeSection,
                       userPrompt,
                       isInitialGeneration: false,
+                      isAiRevision: true,
                     });
                   }}
                   disabled={updateSection.isPending}
