@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, redirect, useLoaderData, useNavigate } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronLeftCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { http } from "~/lib/utils";
-import { Section } from "~/types";
+import { Role, Section } from "~/types";
 import { marked } from "marked";
 import JoditEditor from "~/components/jodit.client";
 import { ClientOnly } from "remix-utils/client-only";
@@ -17,10 +17,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/dropdown-menu";
+import { parse } from "cookie";
 
 type Params = {
   projectId: string;
@@ -39,10 +38,16 @@ type GetSectionResponse = {
   };
 };
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { projectId, sectionId } = params as Params;
   let sections: Section[] = [];
   let activeSection: Section | null = null;
+
+  let cookies = parse(request.headers.get("cookie") || "");
+
+  if (!cookies || !cookies.role) {
+    throw redirect("/login");
+  }
 
   try {
     const [allSectionsRes, activeSectionRes] = await Promise.all([
@@ -63,6 +68,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     sectionId,
     sections,
     activeSection,
+    role: cookies.role as Role,
   };
 };
 
@@ -73,7 +79,7 @@ type UpdateSectionResponse = {
 };
 
 const Page = () => {
-  const { projectId, sectionId, sections, activeSection } =
+  const { projectId, sectionId, sections, activeSection, role } =
     useLoaderData<typeof loader>();
   const [sectionContent, setSectionContent] = useState<string>("");
   const [userPrompt, setUserPrompt] = useState<string>("");
@@ -332,22 +338,24 @@ const Page = () => {
                           showPlaceholder: sectionContent.length === 0,
                         }}
                       />
-                      <div className="flex justify-end">
-                        <Button
-                          className="mt-4"
-                          onClick={() => {
-                            updateSection.mutate({
-                              section: activeSection,
-                              userPrompt: sectionContent,
-                              isInitialGeneration: false,
-                              isAiRevision: false,
-                            });
-                          }}
-                          disabled={updateSection.isPending}
-                        >
-                          Save as Draft
-                        </Button>
-                      </div>
+                      {isReadOnly ? null : (
+                        <div className="flex justify-end">
+                          <Button
+                            className="mt-4"
+                            onClick={() => {
+                              updateSection.mutate({
+                                section: activeSection,
+                                userPrompt: sectionContent,
+                                isInitialGeneration: false,
+                                isAiRevision: false,
+                              });
+                            }}
+                            disabled={updateSection.isPending}
+                          >
+                            Save as Draft
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </ClientOnly>
@@ -383,8 +391,30 @@ const Page = () => {
                     "Apply AI Revision"
                   )}
                 </Button>
-                <Button variant="secondary" disabled>
-                  Finalize section
+                <Button
+                  variant="secondary"
+                  disabled
+                  onClick={() => {
+                    switch (role) {
+                      case Role.GRADUATE_ENGINEER:
+                        confirm(
+                          "Are you sure you have generated content for every section?"
+                        );
+                        break;
+
+                      case Role.MECHANICAL_ENGINEER:
+                        confirm(
+                          "Are you sure you have reviewed every section?"
+                        );
+                        break;
+                    }
+                  }}
+                >
+                  {role === Role.GRADUATE_ENGINEER ? "Submit For Review" : null}
+                  {role === Role.MECHANICAL_ENGINEER
+                    ? "Submit For Approval"
+                    : null}
+                  {role === Role.LEAD_ENGINEER ? "Finalize Section" : null}
                 </Button>
               </div>
             </CardContent>

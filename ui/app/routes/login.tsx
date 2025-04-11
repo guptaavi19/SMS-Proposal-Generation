@@ -7,6 +7,7 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "~/components/ui/card";
 import {
   Select,
@@ -27,7 +28,9 @@ const Page = () => {
   return (
     <div className="h-screen overflow-auto py-8 bg-slate-200">
       <Card className="max-w-md mx-auto mt-24">
-        <CardHeader>Log in</CardHeader>
+        <CardHeader>
+          <CardTitle>Log in</CardTitle>
+        </CardHeader>
         <CardContent>
           <Select
             onValueChange={(value) => {
@@ -53,26 +56,16 @@ const Page = () => {
             onClick={async (e) => {
               e.preventDefault();
 
+              if (role) {
+                document.cookie = `role=${role}`;
+              }
+
               if (role == Role.GRADUATE_ENGINEER) {
                 navigate("/");
               } else {
                 try {
                   setIsRedirectingToProject(true);
-                  const res1 = await http.get<{
-                    data: { project: Project | null };
-                  }>("/latest-project");
-
-                  if (res1.data.data.project) {
-                    const res2 = await http.get<{
-                      data: { sections: Section[] };
-                    }>(`/projects/${res1.data.data.project.id}/sections`);
-
-                    navigate(
-                      `/projects/${res1.data.data.project.id}/sections/${res2.data.data.sections[0].id}`
-                    );
-                  } else {
-                    toast("No project found.");
-                  }
+                  navigate(`/projects`);
                 } catch (e) {
                 } finally {
                   setIsRedirectingToProject(false);
