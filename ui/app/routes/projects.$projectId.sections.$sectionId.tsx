@@ -126,13 +126,16 @@ const Page = () => {
       return {
         res: res.data,
         isInitialGeneration,
+        isAiRevision,
       };
     },
-    onSuccess: async ({ res, isInitialGeneration }) => {
+    onSuccess: async ({ res, isInitialGeneration, isAiRevision }) => {
       if (isInitialGeneration) {
         toast.success(`${res.data.section.displayName} draft generated!`);
-      } else {
+      } else if (isAiRevision) {
         toast.success("AI revision applied!");
+      } else {
+        toast.success("Saved as draft!");
       }
 
       if (isInitialGeneration) {
