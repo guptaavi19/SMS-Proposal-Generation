@@ -248,6 +248,30 @@ const Page = () => {
                       })}
                     </DropdownMenuContent>
                   </DropdownMenu>
+
+                  <Button
+                    variant="outline"
+                    // to={`/projects/${projectId}/consolidated-report`}
+                    disabled={(() => {
+                      let disabled = false;
+
+                      for (let i = 0; i < sections.length; ++i) {
+                        if (sections[i].response == "") {
+                          disabled = true;
+                          break;
+                        }
+                      }
+
+                      disabled = false;
+
+                      return disabled;
+                    })()}
+                    onClick={() => {
+                      navigate(`/projects/${projectId}/consolidated-report`);
+                    }}
+                  >
+                    View Consolidated Report
+                  </Button>
                 </div>
               </div>
             </CardHeader>

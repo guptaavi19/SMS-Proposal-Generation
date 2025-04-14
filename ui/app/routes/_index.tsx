@@ -61,6 +61,7 @@ const formSchema = z.object({
 
   originator: z.any(),
   reviewer: z.any(),
+  facilitator: z.any(),
   approver: z.any(),
 
   meetingMinutes: z.any(),
@@ -133,6 +134,7 @@ const Page = () => {
       formData.append("project_location", payload.location);
       formData.append("originator", payload.originator);
       formData.append("reviewer", payload.reviewer);
+      formData.append("facilitator", payload.facilitator);
       formData.append("approver", payload.approver);
 
       if (payload.meetingMinutes) {
@@ -317,7 +319,7 @@ const Page = () => {
 
             <div className="grid grid-cols-12 gap-4 mt-6">
               <div className="col-span-6">
-                <Card className="mx-auto">
+                <Card className="mx-auto h-full">
                   <CardHeader>
                     <CardTitle>Project Information</CardTitle>
                   </CardHeader>
@@ -420,12 +422,24 @@ const Page = () => {
 
                     <FormField
                       control={form.control}
+                      name="facilitator"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Facilitator</FormLabel>
+                          <FormControl>
+                            <Input type="text" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="approver"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
-                            Approver <span className="text-destructive">*</span>
-                          </FormLabel>
+                          <FormLabel>Approver</FormLabel>
                           <FormControl>
                             <Input type="text" {...field} />
                           </FormControl>

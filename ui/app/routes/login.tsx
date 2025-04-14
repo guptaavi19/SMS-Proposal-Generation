@@ -16,8 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { http } from "~/lib/utils";
-import { Project, Role, Section } from "~/types";
+import { Role } from "~/types";
 
 const Page = () => {
   const [role, setRole] = useState<Role>();
