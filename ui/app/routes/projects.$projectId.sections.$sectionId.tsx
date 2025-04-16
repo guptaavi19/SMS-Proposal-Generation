@@ -245,7 +245,6 @@ const Page = () => {
 
                   <Button
                     variant="outline"
-                    // to={`/projects/${projectId}/consolidated-report`}
                     disabled={(() => {
                       let disabled = false;
 
@@ -261,10 +260,10 @@ const Page = () => {
                       return disabled;
                     })()}
                     onClick={() => {
-                      navigate(`/projects/${projectId}/consolidated-report`);
+                      navigate(`/projects/${projectId}/comprehensive-overview`);
                     }}
                   >
-                    View Consolidated Report
+                    View Comprehensive Overview
                   </Button>
                 </div>
               </div>
