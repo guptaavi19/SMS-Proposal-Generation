@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { http } from "~/lib/utils";
-import { Role, Section } from "~/types";
+import { GetSectionsResponse, Role, Section } from "~/types";
 import { marked } from "marked";
 import JoditEditor from "~/components/jodit.client";
 import { ClientOnly } from "remix-utils/client-only";
@@ -24,12 +24,6 @@ import { parse } from "cookie";
 type Params = {
   projectId: string;
   sectionId: string;
-};
-
-type GetSectionsResponse = {
-  data: {
-    sections: Section[];
-  };
 };
 
 type GetSectionResponse = {

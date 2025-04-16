@@ -47,3 +47,9 @@ export enum Role {
   MECHANICAL_ENGINEER = "mechanical_engineer",
   LEAD_ENGINEER = "lead_engineer",
 }
+
+export type GetSectionsResponse = {
+  data: {
+    sections: Section[];
+  };
+};
