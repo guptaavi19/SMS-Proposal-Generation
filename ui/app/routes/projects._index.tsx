@@ -7,14 +7,59 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { http } from "~/lib/utils";
-import { Project, Section } from "~/types";
+import { Customer, Project, Section } from "~/types";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import { Button, buttonVariants } from "~/components/ui/button";
 
 export const loader = async () => {
-  let projects: Project[] = [];
+  let projects: (Project & {
+    customer: Customer;
+  })[] = [];
 
   try {
-    const res = await http.get<{ data: { projects: Project[] } }>("/projects");
-    projects = res.data.data.projects;
+    const [projectsRes, customersRes] = await Promise.all([
+      http.get<{ data: { projects: Project[] } }>("/projects"),
+      http.get<{ data: { customers: Customer[] } }>("/customers"),
+    ]);
+
+    let projectsBuf: Project[] = projectsRes.data.data.projects;
+    let customers = customersRes.data.data.customers;
+
+    for (let i = 0; i < projectsBuf.length; ++i) {
+      let customer: Customer;
+
+      for (let j = 0; j < customers.length; ++j) {
+        if (projectsBuf[i].customerId === customers[j].id) {
+          customer = customers[j];
+        }
+      }
+
+      projects.push({
+        id: projectsBuf[i].id,
+        customerId: projectsBuf[i].customerId,
+        reportType: projectsBuf[i].reportType,
+        name: projectsBuf[i].name,
+        number: projectsBuf[i].number,
+        location: projectsBuf[i].location,
+        originator: projectsBuf[i].originator,
+        reviewer: projectsBuf[i].reviewer,
+        approver: projectsBuf[i].approver,
+        content: projectsBuf[i].content,
+        createdAt: projectsBuf[i].createdAt,
+        updatedAt: projectsBuf[i].updatedAt,
+        sections: projectsBuf[i].sections,
+        customer: customer!,
+      });
+    }
   } catch (e) {}
 
   return {
@@ -25,42 +70,60 @@ export const loader = async () => {
 const Page = () => {
   const { projects } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
+  console.log(projects);
 
   return (
     <div className="h-screen overflow-auto py-8 bg-slate-200">
-      <Card className="max-w-md mx-auto mt-24">
-        <CardHeader>
-          <CardTitle>Select a Project</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ol className="space-y-4 list-decimal list-inside">
-            {projects.map((project, i) => {
-              return (
-                <li
-                  key={i}
-                  className="hover:underline cursor-pointer w-fit"
-                  onClick={async () => {
-                    const res = await http.get<{
-                      data: { sections: Section[] };
-                    }>(`/projects/${project.id}/sections`);
+      <div className="container mx-auto mt-24">
+        <Card className="mx-auto">
+          <CardHeader>
+            <CardTitle>Select a Project</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project ID</TableHead>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>Project Location</TableHead>
+                  <TableHead>Customer Name</TableHead>
+                  <TableHead>Report Type</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project, i) => {
+                  return (
+                    <TableRow key={i}>
+                      <TableCell>{project.id}</TableCell>
+                      <TableCell>{project.name}</TableCell>
+                      <TableCell>{project.location}</TableCell>
+                      <TableCell>{project.customer.name}</TableCell>
+                      <TableCell>{project.reportType.displayName}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          onClick={async () => {
+                            const res = await http.get<{
+                              data: { sections: Section[] };
+                            }>(`/projects/${project.id}/sections`);
 
-                    navigate(
-                      `/projects/${project.id}/sections/${res.data.data.sections[0].id}`
-                    );
-                  }}
-                >
-                  {project.name} -{" "}
-                  {new Intl.DateTimeFormat("en-AU", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  }).format(new Date(project.createdAt))}
-                </li>
-              );
-            })}
-          </ol>
-        </CardContent>
-      </Card>
+                            navigate(
+                              `/projects/${project.id}/sections/${res.data.data.sections[0].id}`
+                            );
+                          }}
+                        >
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
