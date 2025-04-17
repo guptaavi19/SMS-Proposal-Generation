@@ -726,13 +726,7 @@ const Page = () => {
                   />
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={saveProject.isPending}
-                    onClick={() =>
-                      document.getElementById("real-submit-button")!.click()
-                    }
-                  >
+                  <Button type="submit" disabled={saveProject.isPending}>
                     {saveProject.isPending ? (
                       <>
                         <Loader2 className="animate-spin" />
@@ -743,13 +737,6 @@ const Page = () => {
                     )}
                   </Button>
                 </CardFooter>
-                <Button
-                  id="real-submit-button"
-                  type="submit"
-                  className="hidden"
-                >
-                  Submit
-                </Button>
               </Card>
             </div>
           </form>
