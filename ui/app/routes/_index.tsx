@@ -726,67 +726,22 @@ const Page = () => {
                   />
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button>Submit</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Finalize sections and generate draft
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        {sections.map((section, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center py-4 border-b"
-                          >
-                            <div className="flex-1">{section.displayName}</div>
-                            <Switch
-                              checked={selectedSections.includes(
-                                section.apiName
-                              )}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedSections((selectedSections) => [
-                                    ...selectedSections,
-                                    section.apiName,
-                                  ]);
-                                } else {
-                                  setSelectedSections((selectedSections) => {
-                                    return selectedSections.filter(
-                                      (s) => s !== section.apiName
-                                    );
-                                  });
-                                }
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          type="submit"
-                          disabled={saveProject.isPending}
-                          onClick={() =>
-                            document
-                              .getElementById("real-submit-button")!
-                              .click()
-                          }
-                        >
-                          {saveProject.isPending ? (
-                            <>
-                              <Loader2 className="animate-spin" />
-                              Generating Proposal
-                            </>
-                          ) : (
-                            "Submit"
-                          )}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <Button
+                    type="submit"
+                    disabled={saveProject.isPending}
+                    onClick={() =>
+                      document.getElementById("real-submit-button")!.click()
+                    }
+                  >
+                    {saveProject.isPending ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Generating Proposal
+                      </>
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
                 </CardFooter>
                 <Button
                   id="real-submit-button"

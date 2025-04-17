@@ -211,38 +211,6 @@ const Page = () => {
                   <CardTitle className="text-xl ml-2">Sections</CardTitle>
                 </div>
                 <div className="mt-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">Toggle Sections</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {sections.map((section, i) => {
-                        return (
-                          <DropdownMenuCheckboxItem
-                            key={i}
-                            checked={visibleSections.includes(section.apiName)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setVisibleSections((visibleSections) => [
-                                  ...visibleSections,
-                                  section.apiName,
-                                ]);
-                              } else {
-                                setVisibleSections((visibleSections) => {
-                                  return visibleSections.filter(
-                                    (s) => s !== section.apiName
-                                  );
-                                });
-                              }
-                            }}
-                          >
-                            {section.displayName}
-                          </DropdownMenuCheckboxItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
                   <Button
                     variant="outline"
                     onClick={async () => {
