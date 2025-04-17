@@ -244,27 +244,30 @@ const Page = () => {
                   </DropdownMenu>
 
                   <Button
-                    variant="outline"
-                    disabled={(() => {
-                      let disabled = false;
+  variant="outline"
+  onClick={async () => {
+    try {
+      const res = await fetch(
+        `http://localhost:8000/projects/${projectId}/are-all-sections-generated`
+      );
+      const data = await res.json();
 
-                      for (let i = 0; i < sections.length; ++i) {
-                        if (sections[i].response == "") {
-                          disabled = true;
-                          break;
-                        }
-                      }
+      if (data.are_all_sections_generated) {
+        navigate(`/projects/${projectId}/comprehensive-overview`, {
+          state: { mergedResponse: data.merged_response },
+        });
+      } else {
+        toast.error("Not all sections have been generated yet!");
+      }
+    } catch (error) {
+      console.error("Error checking sections:", error);
+      toast.error("Failed to fetch section status. Try again later.");
+    }
+  }}
+>
+  View Comprehensive Overview
+</Button>
 
-                      disabled = false;
-
-                      return disabled;
-                    })()}
-                    onClick={() => {
-                      navigate(`/projects/${projectId}/comprehensive-overview`);
-                    }}
-                  >
-                    View Comprehensive Overview
-                  </Button>
                 </div>
               </div>
             </CardHeader>
