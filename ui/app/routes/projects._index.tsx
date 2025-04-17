@@ -105,42 +105,44 @@ const Page = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project, i) => {
-                  if (
-                    searchQuery &&
-                    !project.name
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase())
-                  ) {
-                    return null;
-                  }
+                {projects
+                  .slice(0, searchQuery ? projects.length : 3)
+                  .map((project, i) => {
+                    if (
+                      searchQuery &&
+                      !project.name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase())
+                    ) {
+                      return null;
+                    }
 
-                  return (
-                    <TableRow key={i}>
-                      <TableCell>{project.id}</TableCell>
-                      <TableCell>{project.name}</TableCell>
-                      <TableCell>{project.location}</TableCell>
-                      <TableCell>{project.customer.name}</TableCell>
-                      <TableCell>{project.reportType.displayName}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          onClick={async () => {
-                            const res = await http.get<{
-                              data: { sections: Section[] };
-                            }>(`/projects/${project.id}/sections`);
+                    return (
+                      <TableRow key={i}>
+                        <TableCell>{project.id}</TableCell>
+                        <TableCell>{project.name}</TableCell>
+                        <TableCell>{project.location}</TableCell>
+                        <TableCell>{project.customer.name}</TableCell>
+                        <TableCell>{project.reportType.displayName}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              const res = await http.get<{
+                                data: { sections: Section[] };
+                              }>(`/projects/${project.id}/sections`);
 
-                            navigate(
-                              `/projects/${project.id}/sections/${res.data.data.sections[0].id}`
-                            );
-                          }}
-                        >
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                              navigate(
+                                `/projects/${project.id}/sections/${res.data.data.sections[0].id}`
+                              );
+                            }}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </CardContent>
