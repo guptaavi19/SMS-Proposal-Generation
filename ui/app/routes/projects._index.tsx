@@ -19,11 +19,15 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Button, buttonVariants } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { useEffect, useState } from "react";
+
+type ProjectWithCustomer = Project & {
+  customer: Customer;
+};
 
 export const loader = async () => {
-  let projects: (Project & {
-    customer: Customer;
-  })[] = [];
+  let projects: ProjectWithCustomer[] = [];
 
   try {
     const [projectsRes, customersRes] = await Promise.all([
@@ -69,8 +73,8 @@ export const loader = async () => {
 
 const Page = () => {
   const { projects } = useLoaderData<typeof loader>();
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const navigate = useNavigate();
-  console.log(projects);
 
   return (
     <div className="h-screen overflow-auto py-8 bg-slate-200">
@@ -80,7 +84,16 @@ const Page = () => {
             <CardTitle>Select a Project</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <div>
+              <Input
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                }}
+              />
+            </div>
+            <Table className="mt-4">
               <TableHeader>
                 <TableRow>
                   <TableHead>Project ID</TableHead>
@@ -93,6 +106,15 @@ const Page = () => {
               </TableHeader>
               <TableBody>
                 {projects.map((project, i) => {
+                  if (
+                    searchQuery &&
+                    !project.name
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
+                  ) {
+                    return null;
+                  }
+
                   return (
                     <TableRow key={i}>
                       <TableCell>{project.id}</TableCell>

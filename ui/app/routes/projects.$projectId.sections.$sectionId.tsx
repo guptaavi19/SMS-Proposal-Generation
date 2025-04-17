@@ -244,30 +244,36 @@ const Page = () => {
                   </DropdownMenu>
 
                   <Button
-  variant="outline"
-  onClick={async () => {
-    try {
-      const res = await fetch(
-        `http://localhost:8000/projects/${projectId}/are-all-sections-generated`
-      );
-      const data = await res.json();
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(
+                          `http://localhost:8000/projects/${projectId}/are-all-sections-generated`
+                        );
+                        const data = await res.json();
 
-      if (data.are_all_sections_generated) {
-        navigate(`/projects/${projectId}/comprehensive-overview`, {
-          state: { mergedResponse: data.merged_response },
-        });
-      } else {
-        toast.error("Not all sections have been generated yet!");
-      }
-    } catch (error) {
-      console.error("Error checking sections:", error);
-      toast.error("Failed to fetch section status. Try again later.");
-    }
-  }}
->
-  View Comprehensive Overview
-</Button>
-
+                        if (data.are_all_sections_generated) {
+                          navigate(
+                            `/projects/${projectId}/comprehensive-overview`,
+                            {
+                              state: { mergedResponse: data.merged_response },
+                            }
+                          );
+                        } else {
+                          toast.error(
+                            "Not all sections have been generated yet!"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Error checking sections:", error);
+                        toast.error(
+                          "Failed to fetch section status. Try again later."
+                        );
+                      }
+                    }}
+                  >
+                    View Comprehensive Overview
+                  </Button>
                 </div>
               </div>
             </CardHeader>
