@@ -425,7 +425,7 @@ const Page = () => {
                       name="facilitator"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Facilitator</FormLabel>
+                          <FormLabel>Facilitator (Optional)</FormLabel>
                           <FormControl>
                             <Input type="text" {...field} />
                           </FormControl>
@@ -439,7 +439,7 @@ const Page = () => {
                       name="approver"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Approver</FormLabel>
+                          <FormLabel>Approver (Optional)</FormLabel>
                           <FormControl>
                             <Input type="text" {...field} />
                           </FormControl>

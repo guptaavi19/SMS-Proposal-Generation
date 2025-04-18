@@ -42,7 +42,10 @@ const Page = () => {
         sections
           .map((section) => {
             let buf = marked(section.response);
-            return buf;
+            return (
+              `<h1 style="font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 12px;">${section.displayName}</h1>` +
+              buf
+            );
           })
           .join("<br><hr><br>")
       );
@@ -54,7 +57,7 @@ const Page = () => {
       <div className="col-span-12">
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">
+            <CardTitle className="text-center text-2xl">
               Comprehensive Overview
             </CardTitle>
           </CardHeader>
