@@ -198,7 +198,7 @@ const Page = () => {
       <div className="grid grid-cols-12 min-h-screen p-4 gap-4 bg-slate-200">
         <div className="col-span-3 h-full">
           <Card className="h-full">
-            <CardHeader className="">
+            <CardHeader>
               <div>
                 <img src="/assets/logo.png" />
               </div>
@@ -293,6 +293,14 @@ const Page = () => {
               <CardTitle className="text-center">
                 {activeSection.displayName}
               </CardTitle>
+              <div className="flex justify-center !mt-4">
+                <Link
+                  to={`/projects/${projectId}/sections/${sectionId}/audit`}
+                  className={buttonVariants()}
+                >
+                  View Audit Log
+                </Link>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="mt-8">
