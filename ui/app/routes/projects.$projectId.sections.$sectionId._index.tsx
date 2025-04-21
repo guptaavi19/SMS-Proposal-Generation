@@ -221,12 +221,9 @@ const Page = () => {
                         const data = await res.json();
 
                         if (data.are_all_sections_generated) {
-                          navigate(
-                            `/projects/${projectId}/comprehensive-overview`,
-                            {
-                              state: { mergedResponse: data.merged_response },
-                            }
-                          );
+                          navigate(`/projects/${projectId}/report-overview`, {
+                            state: { mergedResponse: data.merged_response },
+                          });
                         } else {
                           toast.error(
                             "Not all sections have been generated yet!"
@@ -240,7 +237,7 @@ const Page = () => {
                       }
                     }}
                   >
-                    View Comprehensive Overview
+                    View Report Overview
                   </Button>
                 </div>
               </div>
@@ -381,7 +378,7 @@ const Page = () => {
                       isAiRevision: true,
                     });
                   }}
-                  disabled={updateSection.isPending}
+                  disabled={updateSection.isPending || userPrompt.length === 0}
                 >
                   {updateSection.isPending &&
                   !generatingSectionContent.isGenerating ? (
@@ -392,31 +389,6 @@ const Page = () => {
                   ) : (
                     "Apply AI Revision"
                   )}
-                </Button>
-                <Button
-                  variant="secondary"
-                  disabled
-                  onClick={() => {
-                    switch (role) {
-                      case Role.GRADUATE_ENGINEER:
-                        confirm(
-                          "Are you sure you have generated content for every section?"
-                        );
-                        break;
-
-                      case Role.MECHANICAL_ENGINEER:
-                        confirm(
-                          "Are you sure you have reviewed every section?"
-                        );
-                        break;
-                    }
-                  }}
-                >
-                  {role === Role.GRADUATE_ENGINEER ? "Submit For Review" : null}
-                  {role === Role.MECHANICAL_ENGINEER
-                    ? "Submit For Approval"
-                    : null}
-                  {role === Role.LEAD_ENGINEER ? "Finalize Section" : null}
                 </Button>
               </div>
             </CardContent>

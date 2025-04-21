@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { Loader2 } from "lucide-react";
 import { ClientOnly } from "remix-utils/client-only";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -8,6 +8,7 @@ import { GetSectionsResponse, Section } from "~/types";
 import JoditEditor from "~/components/jodit.client";
 import { useEffect, useState } from "react";
 import { marked } from "marked";
+import { Button } from "~/components/ui/button";
 
 type Params = {
   projectId: string;
@@ -34,6 +35,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
 const Page = () => {
   const { sections } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
   const [content, setContent] = useState<string>("");
 
   useEffect(() => {
@@ -57,9 +59,12 @@ const Page = () => {
       <div className="col-span-12">
         <Card>
           <CardHeader>
-            <CardTitle className="text-center text-2xl">
-              Comprehensive Overview
-            </CardTitle>
+            <div>
+              <Button onClick={() => navigate(-1)}>Go Back</Button>
+              <CardTitle className="text-center text-2xl">
+                Report Overview
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mt-8">
@@ -81,6 +86,15 @@ const Page = () => {
                   </div>
                 )}
               </ClientOnly>
+            </div>
+
+            <div className="mt-8 flex flex-col items-center space-y-4">
+              <div>
+                <Button>Submit for Approval</Button>
+              </div>
+              <div>
+                <Button variant="outline">Generate Word Document</Button>
+              </div>
             </div>
           </CardContent>
         </Card>

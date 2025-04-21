@@ -50,6 +50,7 @@ type AuditLog = {
   oldPrompt: string;
   oldResponse: string;
   timestamp: string;
+  version: string;
 };
 
 type GetSectionResponse = {
@@ -183,6 +184,7 @@ const Page = () => {
                 <TableCaption>A list of your recent invoices.</TableCaption>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Version</TableHead>
                     <TableHead>Old Prompt</TableHead>
                     <TableHead>Old Response</TableHead>
                     <TableHead>New Prompt</TableHead>
@@ -194,6 +196,7 @@ const Page = () => {
                   {auditLogs.map((row, i) => {
                     return (
                       <TableRow key={i}>
+                        <TableCell>{row.version}</TableCell>
                         <TableCell className="font-medium">
                           {renderLargeContent(row.oldPrompt)}
                         </TableCell>
