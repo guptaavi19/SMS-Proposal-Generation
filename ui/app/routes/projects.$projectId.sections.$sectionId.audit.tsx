@@ -181,7 +181,7 @@ const Page = () => {
             </CardHeader>
             <CardContent>
               <Table>
-                <TableCaption>A list of your recent invoices.</TableCaption>
+                
                 <TableHeader>
                   <TableRow>
                     <TableHead>Version</TableHead>
