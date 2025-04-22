@@ -37,12 +37,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-
+ 
 type Params = {
   projectId: string;
   sectionId: string;
 };
-
+ 
 type AuditLog = {
   id: string;
   newPrompt: string;
@@ -52,25 +52,25 @@ type AuditLog = {
   timestamp: string;
   version: string;
 };
-
+ 
 type GetSectionResponse = {
   data: {
     section: Section;
   };
 };
-
+ 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { projectId, sectionId } = params as Params;
   let sections: Section[] = [];
   let activeSection: Section | null = null;
   let auditLogs: AuditLog[] = [];
-
+ 
   let cookies = parse(request.headers.get("cookie") || "");
-
+ 
   if (!cookies || !cookies.role) {
     throw redirect("/login");
   }
-
+ 
   try {
     const [allSectionsRes, activeSectionRes, auditRes] = await Promise.all([
       await http.get<GetSectionsResponse>(`/projects/${projectId}/sections`),
@@ -81,14 +81,14 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
         `/projects/${projectId}/sections/${sectionId}/audit`
       ),
     ]);
-
+ 
     sections = allSectionsRes.data.data.sections;
     activeSection = activeSectionRes.data.data.section;
     auditLogs = auditRes.data.history;
   } catch (e) {
     console.log(e);
   }
-
+ 
   return {
     projectId,
     sectionId,
@@ -98,34 +98,34 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     role: cookies.role as Role,
   };
 };
-
+ 
 type UpdateSectionResponse = {
   data: {
     section: Section;
   };
 };
-
+ 
 const renderLargeContent = (content: string) => {
   if (content.length === 0) {
     return "N/A";
   }
-
+ 
   if (content.length > 200) {
     return content.slice(0, 200) + "...";
   }
-
+ 
   return content;
 };
-
+ 
 const Page = () => {
   const { projectId, sectionId, sections, activeSection, auditLogs } =
     useLoaderData<typeof loader>();
-
+ 
   if (!activeSection) {
     // TODO: Improve this
     return <div>Not found.</div>;
   }
-
+ 
   return (
     <>
       <div className="grid grid-cols-12 min-h-screen p-4 gap-4 bg-slate-200">
@@ -143,7 +143,7 @@ const Page = () => {
                   >
                     <ChevronLeftCircle />
                   </Link>
-
+ 
                   <CardTitle className="text-xl ml-2">Sections</CardTitle>
                 </div>
               </div>
@@ -152,7 +152,7 @@ const Page = () => {
               <div className="space-y-2">
                 {sections.map((section, i) => {
                   let href = `/projects/${section.projectId}/sections/${section.id}/audit`;
-
+ 
                   return (
                     <div key={i}>
                       <Link
@@ -181,14 +181,15 @@ const Page = () => {
             </CardHeader>
             <CardContent>
               <Table>
-                
+               
                 <TableHeader>
                   <TableRow>
                     <TableHead>Version</TableHead>
-                    <TableHead>Old Prompt</TableHead>
-                    <TableHead>Old Response</TableHead>
-                    <TableHead>New Prompt</TableHead>
-                    <TableHead>New Response</TableHead>
+                    <TableHead>Previous Prompt</TableHead>
+                    <TableHead>Previous Content</TableHead>
+                    <TableHead>Revised Prompt</TableHead>
+                    <TableHead>Revised Content</TableHead>
+                    <TableHead>Revision Date</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -196,7 +197,9 @@ const Page = () => {
                   {auditLogs.map((row, i) => {
                     return (
                       <TableRow key={i}>
-                        <TableCell>{row.version}</TableCell>
+                        <TableCell className="font-medium">
+                          {renderLargeContent(row.version)}
+                        </TableCell>
                         <TableCell className="font-medium">
                           {renderLargeContent(row.oldPrompt)}
                         </TableCell>
@@ -208,6 +211,9 @@ const Page = () => {
                         </TableCell>
                         <TableCell>
                           {renderLargeContent(row.newResponse)}
+                        </TableCell>
+                        <TableCell>
+                          {renderLargeContent(row.timestamp)}
                         </TableCell>
                         <TableCell>
                           <Dialog>
@@ -238,5 +244,7 @@ const Page = () => {
     </>
   );
 };
-
+ 
 export default Page;
+ 
+ 
