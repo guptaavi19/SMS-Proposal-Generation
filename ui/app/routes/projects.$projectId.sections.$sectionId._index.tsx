@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/dropdown-menu";
 import { parse } from "cookie";
+import { isAxiosError } from "axios";
 
 type Params = {
   projectId: string;
@@ -143,6 +144,7 @@ const Page = () => {
       } else {
         let htmlContent = await marked(res.data.section.response);
         setSectionContent(htmlContent);
+        setUserPrompt("");
       }
     },
     onError: () => {
@@ -153,6 +155,29 @@ const Page = () => {
         isGenerating: false,
         sectionName: "",
       });
+    },
+  });
+
+  const undoMutation = useMutation({
+    mutationFn: async () => {
+      const res = await http.delete<{ responseContent: string }>(
+        `/projects/${projectId}/sections/${sectionId}/undo`
+      );
+
+      return res.data;
+    },
+    onSuccess: async ({ responseContent }) => {
+      let htmlContent = await marked(responseContent);
+      setSectionContent(htmlContent);
+    },
+    onError: (e) => {
+      let msg = "Something went wrong, please try again.";
+
+      if (isAxiosError<{ message: string }>(e) && e.response) {
+        msg = e.response.data.message;
+      }
+
+      toast.error(msg);
     },
   });
 
@@ -359,6 +384,25 @@ const Page = () => {
                   )}
                 </ClientOnly>
               </div>
+              <div className="mt-2 flex justify-end">
+                <Button
+                  size="sm"
+                  disabled={isReadOnly || undoMutation.isPending}
+                  onClick={() => {
+                    undoMutation.mutate();
+                  }}
+                >
+                  {undoMutation.isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Undo"
+                  )}
+                </Button>
+              </div>
+
               <div className="mt-8">
                 <Label>AI Prompt</Label>
                 <Textarea
