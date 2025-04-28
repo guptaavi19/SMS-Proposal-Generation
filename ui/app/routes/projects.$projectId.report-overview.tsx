@@ -9,6 +9,8 @@ import JoditEditor from "~/components/jodit.client";
 import { useEffect, useState } from "react";
 import { marked } from "marked";
 import { Button } from "~/components/ui/button";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 type Params = {
   projectId: string;
@@ -29,14 +31,26 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   }
 
   return {
+    projectId,
     sections,
   };
 };
 
 const Page = () => {
-  const { sections } = useLoaderData<typeof loader>();
+  const { projectId, sections } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [content, setContent] = useState<string>("");
+  const powerAutomateMutation = useMutation({
+    mutationFn: async () => {
+      await http.post(`/projects/${projectId}/send-to-automate`);
+    },
+    onSuccess: () => {
+      toast.success("Power automate flow triggered.");
+    },
+    onError: (e) => {
+      toast.error(e.message);
+    },
+  });
 
   useEffect(() => {
     if (sections) {
@@ -93,7 +107,17 @@ const Page = () => {
                 <Button>Submit for Approval</Button>
               </div>
               <div>
-                <Button variant="outline">Generate Word Document</Button>
+                <Button
+                  variant="outline"
+                  disabled={powerAutomateMutation.isPending}
+                  onClick={() => {
+                    powerAutomateMutation.mutate();
+                  }}
+                >
+                  {powerAutomateMutation.isPending
+                    ? "Generating"
+                    : "Generate Word Document"}
+                </Button>
               </div>
             </div>
           </CardContent>
