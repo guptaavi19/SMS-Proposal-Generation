@@ -41,8 +41,11 @@ const Page = () => {
   const navigate = useNavigate();
   const [content, setContent] = useState<string>("");
   const powerAutomateMutation = useMutation({
-    mutationFn: async () => {
-      await http.post(`/projects/${projectId}/send-to-automate`);
+    mutationFn: async ({ htmlContent }: { htmlContent: string }) => {
+      const formData = new FormData();
+      formData.append("html_content", htmlContent);
+
+      await http.post(`/projects/${projectId}/send-to-automate`, formData);
     },
     onSuccess: () => {
       toast.success("Power automate flow triggered.");
@@ -111,7 +114,7 @@ const Page = () => {
                   variant="outline"
                   disabled={powerAutomateMutation.isPending}
                   onClick={() => {
-                    powerAutomateMutation.mutate();
+                    powerAutomateMutation.mutate({ htmlContent: content });
                   }}
                 >
                   {powerAutomateMutation.isPending
