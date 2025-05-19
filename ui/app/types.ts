@@ -1,3 +1,5 @@
+import { AccountInfo } from "@azure/msal-browser";
+
 export type Customer = {
   id: string;
   name: string;
@@ -56,3 +58,18 @@ export type GetSectionsResponse = {
     sections: Section[];
   };
 };
+
+// Custom interface that matches what we're actually using
+export interface CustomAuthResult {
+  accessToken: string;
+  idToken: string;
+  account: AccountInfo;
+  expiresOn: Date;
+  scopes: string[];
+  tenantId: string;
+  uniqueId: string;
+  authority: string;
+  fromCache: boolean;
+  correlationId: string;
+  tokenType: string;
+}

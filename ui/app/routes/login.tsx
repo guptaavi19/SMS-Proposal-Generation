@@ -1,84 +1,44 @@
-import { useNavigate } from "@remix-run/react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Role } from "~/types";
+// app/routes/login.tsx
+import { useEffect } from "react";
+import { useSearchParams } from "@remix-run/react";
+import { useMsal } from "@azure/msal-react";
+import { loginRequest } from "~/auth-config";
+import { RedirectRequest } from "@azure/msal-browser";
+import { useAuth } from "~/providers/auth-provider";
 
-const Page = () => {
-  const [role, setRole] = useState<Role>();
-  const [isRedirectingToProject, setIsRedirectingToProject] =
-    useState<boolean>(false);
-  const navigate = useNavigate();
+export default function Login() {
+  const { instance, inProgress } = useMsal();
+  const { isAuthenticated } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/projects";
+
+  useEffect(() => {
+    // If already authenticated, redirect to target
+    if (isAuthenticated) {
+      window.location.href = redirectTo;
+      return;
+    }
+
+    // Only attempt login when MSAL is fully initialized
+    if (instance && inProgress === "none") {
+      // Create redirect request with state to remember where to redirect after auth
+      const request: RedirectRequest = {
+        ...loginRequest,
+        state: redirectTo, // Store the redirectTo URL in the state parameter
+      };
+
+      // Redirect to Microsoft login page
+      instance.loginRedirect(request).catch((error) => {
+        console.error("Login redirect failed:", error);
+      });
+    }
+  }, [instance, inProgress, redirectTo, isAuthenticated]);
 
   return (
-    <div className="h-screen overflow-auto py-8 bg-slate-200">
-      <Card className="max-w-md mx-auto mt-24">
-        <CardHeader>
-          <CardTitle>Log in</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select
-            onValueChange={(value) => {
-              setRole(value as Role);
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={Role.GRADUATE_ENGINEER}>
-                Graduate Engineer
-              </SelectItem>
-              <SelectItem value={Role.MECHANICAL_ENGINEER}>
-                Mechanical Engineer
-              </SelectItem>
-              <SelectItem value={Role.LEAD_ENGINEER}>Lead Engineer</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-        <CardFooter className="justify-end">
-          <Button
-            onClick={async (e) => {
-              e.preventDefault();
-
-              if (role) {
-                document.cookie = `role=${role}`;
-              }
-
-              if (role == Role.GRADUATE_ENGINEER) {
-                navigate("/");
-              } else {
-                try {
-                  setIsRedirectingToProject(true);
-                  navigate(`/projects`);
-                } catch (e) {
-                } finally {
-                  setIsRedirectingToProject(false);
-                }
-              }
-            }}
-            disabled={!role || isRedirectingToProject}
-          >
-            {isRedirectingToProject ? "Please wait" : "Log in"}
-          </Button>
-        </CardFooter>
-      </Card>
+    <div className="login-container">
+      <h1>Signing in to Microsoft Entra ID</h1>
+      <p>You are being redirected to Microsoft for authentication...</p>
+      <div className="loading-indicator">Loading...</div>
     </div>
   );
-};
-
-export default Page;
+}

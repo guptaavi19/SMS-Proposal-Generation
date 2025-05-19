@@ -80,8 +80,11 @@ const Page = () => {
     <div className="h-screen overflow-auto py-8 bg-slate-200">
       <div className="container mx-auto mt-24">
         <Card className="mx-auto">
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Select a Project</CardTitle>
+            <Link to="/" className={buttonVariants()}>
+              New Project
+            </Link>
           </CardHeader>
           <CardContent>
             <div>

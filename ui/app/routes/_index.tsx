@@ -43,6 +43,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import axios from "axios";
+import RequireAuth from "~/components/require-auth";
 
 export const meta: MetaFunction = () => {
   return [
@@ -215,7 +216,7 @@ const Page = () => {
   }, [saveProject.isPending]);
 
   return (
-    <>
+    <RequireAuth>
       {saveProject.isPending ? (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
@@ -742,7 +743,7 @@ const Page = () => {
           </form>
         </Form>
       </div>
-    </>
+    </RequireAuth>
   );
 };
 
