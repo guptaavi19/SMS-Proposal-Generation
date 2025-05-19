@@ -12,9 +12,9 @@ const getRedirectUri = () => {
 
 export const msalConfig: Configuration = {
   auth: {
-    clientId: "7594f653-e03c-4279-afbd-58ba25c951d8", // Replace with your app's client ID
+    clientId: "73a7ce46-9279-43e7-9ca8-30d050ce966a ", // Replace with your app's client ID
     authority:
-      "https://login.microsoftonline.com/077104d2-9b90-4ca9-8afb-9657962a1309", // Replace with your tenant ID
+      "https://login.microsoftonline.com/dca13a8f-52cf-4bf2-b966-6b5fe11be437", // Replace with your tenant ID
     redirectUri: getRedirectUri(),
     navigateToLoginRequestUrl: true,
   },

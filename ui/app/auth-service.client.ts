@@ -47,7 +47,12 @@ export class AuthClient {
 
   // Check if the user is authenticated
   static isAuthenticated(): boolean {
-    return true;
+    if (typeof window === "undefined") return false; // Guard against SSR
+
+    const expiresAt = localStorage.getItem(AUTH_EXPIRES_KEY);
+    if (!expiresAt) return false;
+
+    return Date.now() < parseInt(expiresAt, 10);
   }
 
   // Get the current user
