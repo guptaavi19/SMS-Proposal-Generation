@@ -1,3 +1,5 @@
+import { AccountInfo } from "@azure/msal-browser";
+
 export type Customer = {
   id: string;
   name: string;
@@ -13,7 +15,10 @@ export type ReportType = {
 export type Project = {
   id: string;
   customerId: string;
-  reportType: string;
+  reportType: {
+    apiName: string;
+    displayName: string;
+  };
   name: string;
   number: string;
   location: string;
@@ -41,3 +46,30 @@ export type Section = {
   createdAt: string;
   updatedAt: string;
 };
+
+export enum Role {
+  GRADUATE_ENGINEER = "graduate_engineer",
+  MECHANICAL_ENGINEER = "mechanical_engineer",
+  LEAD_ENGINEER = "lead_engineer",
+}
+
+export type GetSectionsResponse = {
+  data: {
+    sections: Section[];
+  };
+};
+
+// Custom interface that matches what we're actually using
+export interface CustomAuthResult {
+  accessToken: string;
+  idToken: string;
+  account: AccountInfo;
+  expiresOn: Date;
+  scopes: string[];
+  tenantId: string;
+  uniqueId: string;
+  authority: string;
+  fromCache: boolean;
+  correlationId: string;
+  tokenType: string;
+}

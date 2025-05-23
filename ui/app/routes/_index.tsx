@@ -43,6 +43,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import axios from "axios";
+import RequireAuth from "~/components/require-auth";
 
 export const meta: MetaFunction = () => {
   return [
@@ -61,6 +62,7 @@ const formSchema = z.object({
 
   originator: z.any(),
   reviewer: z.any(),
+  facilitator: z.any(),
   approver: z.any(),
 
   meetingMinutes: z.any(),
@@ -133,6 +135,7 @@ const Page = () => {
       formData.append("project_location", payload.location);
       formData.append("originator", payload.originator);
       formData.append("reviewer", payload.reviewer);
+      formData.append("facilitator", payload.facilitator);
       formData.append("approver", payload.approver);
 
       if (payload.meetingMinutes) {
@@ -213,7 +216,7 @@ const Page = () => {
   }, [saveProject.isPending]);
 
   return (
-    <>
+    <RequireAuth>
       {saveProject.isPending ? (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center">
@@ -317,7 +320,7 @@ const Page = () => {
 
             <div className="grid grid-cols-12 gap-4 mt-6">
               <div className="col-span-6">
-                <Card className="mx-auto">
+                <Card className="mx-auto h-full">
                   <CardHeader>
                     <CardTitle>Project Information</CardTitle>
                   </CardHeader>
@@ -420,12 +423,24 @@ const Page = () => {
 
                     <FormField
                       control={form.control}
+                      name="facilitator"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Facilitator (Optional)</FormLabel>
+                          <FormControl>
+                            <Input type="text" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="approver"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>
-                            Approver <span className="text-destructive">*</span>
-                          </FormLabel>
+                          <FormLabel>Approver (Optional)</FormLabel>
                           <FormControl>
                             <Input type="text" {...field} />
                           </FormControl>
@@ -712,81 +727,23 @@ const Page = () => {
                   />
                 </CardContent>
                 <CardFooter className="flex justify-end">
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button>Submit</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Finalize sections and generate draft
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        {sections.map((section, i) => (
-                          <div
-                            key={i}
-                            className="flex items-center py-4 border-b"
-                          >
-                            <div className="flex-1">{section.displayName}</div>
-                            <Switch
-                              checked={selectedSections.includes(
-                                section.apiName
-                              )}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedSections((selectedSections) => [
-                                    ...selectedSections,
-                                    section.apiName,
-                                  ]);
-                                } else {
-                                  setSelectedSections((selectedSections) => {
-                                    return selectedSections.filter(
-                                      (s) => s !== section.apiName
-                                    );
-                                  });
-                                }
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          type="submit"
-                          disabled={saveProject.isPending}
-                          onClick={() =>
-                            document
-                              .getElementById("real-submit-button")!
-                              .click()
-                          }
-                        >
-                          {saveProject.isPending ? (
-                            <>
-                              <Loader2 className="animate-spin" />
-                              Generating Proposal
-                            </>
-                          ) : (
-                            "Submit"
-                          )}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <Button type="submit" disabled={saveProject.isPending}>
+                    {saveProject.isPending ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Generating Proposal
+                      </>
+                    ) : (
+                      "Submit"
+                    )}
+                  </Button>
                 </CardFooter>
-                <Button
-                  id="real-submit-button"
-                  type="submit"
-                  className="hidden"
-                >
-                  Submit
-                </Button>
               </Card>
             </div>
           </form>
         </Form>
       </div>
-    </>
+    </RequireAuth>
   );
 };
 

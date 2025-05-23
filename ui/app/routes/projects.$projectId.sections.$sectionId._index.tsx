@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, redirect, useLoaderData, useNavigate } from "@remix-run/react";
 import { useMutation } from "@tanstack/react-query";
 import { ChevronLeftCircle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { http } from "~/lib/utils";
-import { Section } from "~/types";
+import { GetSectionsResponse, Role, Section } from "~/types";
 import { marked } from "marked";
 import JoditEditor from "~/components/jodit.client";
 import { ClientOnly } from "remix-utils/client-only";
@@ -17,20 +17,14 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/dropdown-menu";
+import { parse } from "cookie";
+import { isAxiosError } from "axios";
 
 type Params = {
   projectId: string;
   sectionId: string;
-};
-
-type GetSectionsResponse = {
-  data: {
-    sections: Section[];
-  };
 };
 
 type GetSectionResponse = {
@@ -39,10 +33,16 @@ type GetSectionResponse = {
   };
 };
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { projectId, sectionId } = params as Params;
   let sections: Section[] = [];
   let activeSection: Section | null = null;
+
+  let cookies = parse(request.headers.get("cookie") || "");
+
+  if (!cookies || !cookies.role) {
+    throw redirect("/login");
+  }
 
   try {
     const [allSectionsRes, activeSectionRes] = await Promise.all([
@@ -63,6 +63,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     sectionId,
     sections,
     activeSection,
+    role: cookies.role as Role,
   };
 };
 
@@ -73,7 +74,7 @@ type UpdateSectionResponse = {
 };
 
 const Page = () => {
-  const { projectId, sectionId, sections, activeSection } =
+  const { projectId, sectionId, sections, activeSection, role } =
     useLoaderData<typeof loader>();
   const [sectionContent, setSectionContent] = useState<string>("");
   const [userPrompt, setUserPrompt] = useState<string>("");
@@ -95,13 +96,21 @@ const Page = () => {
       section,
       userPrompt,
       isInitialGeneration,
+      isAiRevision,
     }: {
       section: Section;
       userPrompt: string;
       isInitialGeneration: boolean;
+      isAiRevision: boolean;
     }) => {
       const formData = new FormData();
       formData.append("user_prompt", userPrompt);
+
+      if (isAiRevision) {
+        formData.append("is_ai_revision", "yes");
+      } else {
+        formData.append("is_ai_revision", "no");
+      }
 
       if (isInitialGeneration) {
         setGeneratingSectionContent({
@@ -118,13 +127,16 @@ const Page = () => {
       return {
         res: res.data,
         isInitialGeneration,
+        isAiRevision,
       };
     },
-    onSuccess: async ({ res, isInitialGeneration }) => {
+    onSuccess: async ({ res, isInitialGeneration, isAiRevision }) => {
       if (isInitialGeneration) {
         toast.success(`${res.data.section.displayName} draft generated!`);
-      } else {
+      } else if (isAiRevision) {
         toast.success("AI revision applied!");
+      } else {
+        toast.success("Saved as draft!");
       }
 
       if (isInitialGeneration) {
@@ -132,6 +144,7 @@ const Page = () => {
       } else {
         let htmlContent = await marked(res.data.section.response);
         setSectionContent(htmlContent);
+        setUserPrompt("");
       }
     },
     onError: () => {
@@ -142,6 +155,29 @@ const Page = () => {
         isGenerating: false,
         sectionName: "",
       });
+    },
+  });
+
+  const undoMutation = useMutation({
+    mutationFn: async () => {
+      const res = await http.delete<{ responseContent: string }>(
+        `/projects/${projectId}/sections/${sectionId}/undo`
+      );
+
+      return res.data;
+    },
+    onSuccess: async ({ responseContent }) => {
+      let htmlContent = await marked(responseContent);
+      setSectionContent(htmlContent);
+    },
+    onError: (e) => {
+      let msg = "Something went wrong, please try again.";
+
+      if (isAxiosError<{ message: string }>(e) && e.response) {
+        msg = e.response.data.message;
+      }
+
+      toast.error(msg);
     },
   });
 
@@ -187,7 +223,7 @@ const Page = () => {
       <div className="grid grid-cols-12 min-h-screen p-4 gap-4 bg-slate-200">
         <div className="col-span-3 h-full">
           <Card className="h-full">
-            <CardHeader className="">
+            <CardHeader>
               <div>
                 <img src="/assets/logo.png" />
               </div>
@@ -200,37 +236,34 @@ const Page = () => {
                   <CardTitle className="text-xl ml-2">Sections</CardTitle>
                 </div>
                 <div className="mt-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline">Toggle Sections</Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                      {sections.map((section, i) => {
-                        return (
-                          <DropdownMenuCheckboxItem
-                            key={i}
-                            checked={visibleSections.includes(section.apiName)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setVisibleSections((visibleSections) => [
-                                  ...visibleSections,
-                                  section.apiName,
-                                ]);
-                              } else {
-                                setVisibleSections((visibleSections) => {
-                                  return visibleSections.filter(
-                                    (s) => s !== section.apiName
-                                  );
-                                });
-                              }
-                            }}
-                          >
-                            {section.displayName}
-                          </DropdownMenuCheckboxItem>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(
+                          `http://localhost:8000/projects/${projectId}/are-all-sections-generated`
                         );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        const data = await res.json();
+
+                        if (data.are_all_sections_generated) {
+                          navigate(`/projects/${projectId}/report-overview`, {
+                            state: { mergedResponse: data.merged_response },
+                          });
+                        } else {
+                          toast.error(
+                            "Not all sections have been generated yet!"
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Error checking sections:", error);
+                        toast.error(
+                          "Failed to fetch section status. Try again later."
+                        );
+                      }
+                    }}
+                  >
+                    View Report Overview
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -253,6 +286,7 @@ const Page = () => {
                               section: section,
                               userPrompt: "",
                               isInitialGeneration: true,
+                              isAiRevision: true,
                             });
 
                             return;
@@ -281,6 +315,21 @@ const Page = () => {
               <CardTitle className="text-center">
                 {activeSection.displayName}
               </CardTitle>
+              <div className="flex flex-col items-center justify-center !mt-4 space-y-4">
+                <Link
+                  to={`/projects/${projectId}/sections/${sectionId}/audit`}
+                  className={buttonVariants()}
+                >
+                  View Audit Log
+                </Link>
+
+                <Link
+                  to={`/projects/${projectId}/sections/${sectionId}/prompt`}
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  Edit Prompt
+                </Link>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="mt-8">
@@ -311,17 +360,56 @@ const Page = () => {
                   }
                 >
                   {() => (
-                    <JoditEditor
-                      value={sectionContent}
-                      onBlur={(newContent) => setSectionContent(newContent)}
-                      config={{
-                        readonly: isReadOnly,
-                        showPlaceholder: sectionContent.length === 0,
-                      }}
-                    />
+                    <div>
+                      <JoditEditor
+                        value={sectionContent}
+                        onBlur={(newContent) => setSectionContent(newContent)}
+                        config={{
+                          readonly: isReadOnly,
+                          showPlaceholder: sectionContent.length === 0,
+                        }}
+                      />
+                      {isReadOnly ? null : (
+                        <div className="flex justify-end">
+                          <Button
+                            className="mt-4"
+                            onClick={() => {
+                              updateSection.mutate({
+                                section: activeSection,
+                                userPrompt: sectionContent,
+                                isInitialGeneration: false,
+                                isAiRevision: false,
+                              });
+                            }}
+                            disabled={updateSection.isPending}
+                          >
+                            Save as Draft
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </ClientOnly>
               </div>
+              <div className="mt-2 flex justify-end">
+                <Button
+                  size="sm"
+                  disabled={isReadOnly || undoMutation.isPending}
+                  onClick={() => {
+                    undoMutation.mutate();
+                  }}
+                >
+                  {undoMutation.isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Please wait
+                    </>
+                  ) : (
+                    "Undo"
+                  )}
+                </Button>
+              </div>
+
               <div className="mt-8">
                 <Label>AI Prompt</Label>
                 <Textarea
@@ -338,9 +426,10 @@ const Page = () => {
                       section: activeSection,
                       userPrompt,
                       isInitialGeneration: false,
+                      isAiRevision: true,
                     });
                   }}
-                  disabled={updateSection.isPending}
+                  disabled={updateSection.isPending || userPrompt.length === 0}
                 >
                   {updateSection.isPending &&
                   !generatingSectionContent.isGenerating ? (
@@ -351,9 +440,6 @@ const Page = () => {
                   ) : (
                     "Apply AI Revision"
                   )}
-                </Button>
-                <Button variant="secondary" disabled>
-                  Finalize section
                 </Button>
               </div>
             </CardContent>
